@@ -27,7 +27,6 @@ else:
     infile = sys.argv[1]
 
 
-
 #Try to open the file and generates an error message if it fails
 try:
     infile = open(infile, 'r')
@@ -260,10 +259,14 @@ def alignment_blosum(string1, string2, blosum_file, indel):
 #matrix = alignment_blosum("TNDEQHA", "HNPEVMA", -8)
 #print_matrix(matrix)
 
-
+#Function for creating a Blosum matrix out of a file
 def blosum_matrix(file):
+
+    import re
+
     blosum = []
     blosum_dict = dict()
+    flag = False
 
     try:
         infile = open(file, 'r')
@@ -271,14 +274,19 @@ def blosum_matrix(file):
         print("An error ocurred")
 
     for line in infile:
-        if line.startswith("  "):
-            blosum.append(line[:-1].split("  "))
-        elif line[0:1] != "#":
+        line_temp = "".join(line.split())
+        first_row = re.match(r'^[A-Z]{23}\**', line_temp)
+
+
+        if first_row != None:
+            flag = True
+        if flag:
             blosum.append(line[:-1].split())
 
-    
+        
+    #print(blosum)
     dictionary = {blosum[row][0]:{blosum[0][col]:blosum[row][col]} for col in range(len(blosum[0])) for row in range(len(blosum)) }
-
+    print(dictionary)
                 
 
-#blosum_matrix("BLOSUM62.txt")
+blosum_matrix("BLOSUM62.txt")
