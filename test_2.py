@@ -25,9 +25,11 @@ def blosum_matrix(file):
             blosum.append(line[:-1].split())
 
         
-    #print(blosum)
-    dictionary = {blosum[row][0]:{blosum[0][col]:blosum[row][col]} for col in range(len(blosum[0])) for row in range(len(blosum)) }
-    print(dictionary)
-                
+
+    for row in range(len(blosum)):
+        blosum_dict[blosum[row][0]] = {}
+        for col in range(len(blosum[0])) :
+            blosum_dict[blosum[row][0]][blosum[0][col]] = blosum[row][col] 
+
 
 blosum_matrix("BLOSUM62.txt")

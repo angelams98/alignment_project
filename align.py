@@ -33,12 +33,48 @@ def read_files(infile):
 
 
 
+
+#Function for creating the BLOSUM matrix (dicts of dicts) from a file  
+def blosum_matrix(file):
+
+    import re
+
+    blosum = []
+    blosum_dict = dict()
+    flag = False
+
+    try:
+        infile = open(file, 'r')
+    except IOError:
+        print("An error ocurred")
+
+    for line in infile:
+        line_temp = "".join(line.split())
+        first_row = re.match(r'^[A-Z]{23}\**', line_temp)
+
+
+        if first_row != None:
+            flag = True
+        if flag:
+            blosum.append(line[:-1].split())
+
+        
+
+    for row in range(len(blosum)):
+        blosum_dict[blosum[row][0]] = {}
+        for col in range(len(blosum[0])) :
+            blosum_dict[blosum[row][0]][blosum[0][col]] = blosum[row][col] 
+
+
+
+
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
-def alignment_simple(string1, string2, match, mismatch, indel):
+def alignment_simple(string1, string2, match, mismatch, indel, exten):
 
     #Initialize the variables 
     matrix = []
+    #steps = ""
 
     nrow = len(string1) + 1
     ncol = len(string2) + 1
@@ -54,27 +90,24 @@ def alignment_simple(string1, string2, match, mismatch, indel):
         for col in range(ncol):
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
-                #Indel -1
                 matrix[row][col] = matrix[row][col-1] + indel
+                #step += "indel"
 
             #In the first column we only calculate the values using the values from the top, so we start in row 1
             elif row != 0 and col == 0:
-                #Indel -1
                 matrix[row][col] = matrix[row-1][col] + indel
+                #step += "indel"
             
             #When not in the first row and column, the values can be calculated from left, top or diagonal
             elif row != 0 and col != 0:
-                #Indel -1
                 value_left = matrix[row][col-1] + indel
                 value_top = matrix[row-1][col] + indel
             
                 #We compare the nucleotides in the strings
                 if string1[row-1] == string2[col-1]:
-                    #Match +1
                     value_diag  = matrix[row-1][col-1] + match
 
                 else:
-                    #Mismatch -1
                     value_diag  = matrix[row-1][col-1] + mismatch
 
 
@@ -152,17 +185,14 @@ def print_matrix(matrix):
 def traceback (matrix, seq1, seq2):
 
     #Initialize variables
-
     row = len(matrix) - 1
-    #print(row)
     col = len(matrix[0]) - 1
-    #print(col)
 
     score = matrix[row][col]
 
     align1 = seq1[col-1]
     align2 = seq2[row-1]
-    align_middle = "|"
+    #align_middle = "|"
     total_alignment = ""
 
 
@@ -175,75 +205,105 @@ def traceback (matrix, seq1, seq2):
         if diag_score > left_score or diag_score > top_score:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
-            align_middle = "|" + align_middle
+            #align_middle = "|" + align_middle
 
             row = row - 1
             col = col - 1
             score += diag_score
 
 
-        elif left_score > diag_score or left_score > top_score:
+        if left_score > diag_score or left_score > top_score:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
-            align_middle = " " + align_middle
+            #align_middle = " " + align_middle
             
             col = col - 1
             score += left_score
 
 
-        elif top_score > diag_score or top_score > left_score:
+        if top_score > diag_score or top_score > left_score:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2
-            align_middle = " " + align_middle
+            #align_middle = " " + align_middle
             
             row = row - 1
             score += top_score
 
-    for i in range(0, len(align_middle), 60):
-        total_alignment += align1[i:i+60] + "\n" + align_middle[i:i+60] + "\n" + align2[i:i+60] + "\n"
+        else:
+            align1 = seq1[col-1] + align1
+            align2 = seq2[row-1] + align2
+            #align_middle = "|" + align_middle
+
+            row = row - 1
+            col = col - 1
+
+
+    for i in range(0, len(align1), 60):
+        total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
+
     
     return total_alignment
 
 
 #PSEUDOCODE
-#Call read_files function to get a list with the sequences we are going to align
-#(seq, title) = read_files("dna7.fsa")
+    #Call read_files function to get a list with the sequences we are going to align
+    #(seq, title) = read_files("dna7.fsa")
 
-#Choose 2 sequences and call alignment_simple function to create a list of list with the scores
-#To call this function you have to add the 2 sequences and the values for match, mismatch and Indel
-#possible values for match, mismatch and indel:
-#1, -1, -1
-#0, 1, 1
-#0, 1, 10
-# matrix = alignment_simple(seq[0], seq[1], 1, -1, -1)
+    #Choose 2 sequences and call alignment_simple function to create a list of list with the scores
+    #To call this function you have to add the 2 sequences and the values for match, mismatch and Indel
+    #possible values for match, mismatch and indel:
+    #1, -1, -1
+    #0, 1, 1
+    #0, 1, 10
+    # matrix = alignment_simple(seq[0], seq[1], 1, -1, -1)
 
-#If you want to print this matrix on screen, call print_matrix function
-#print_matrix(matrix)
+    #If you want to print this matrix on screen, call print_matrix function
+    #print_matrix(matrix)
 
-#To calculate the best alignment using the scores from the matrix, call traceback matrix
-#As inputs for the function you need the matrix, and the original strings
-#print(traceback(matrix, seq[0], seq[1]))
+    #To calculate the best alignment using the scores from the matrix, call traceback matrix
+    #As inputs for the function you need the matrix, and the original strings
+    #print(traceback(matrix, seq[0], seq[1]))
+
+
+#The program can get several arguments: file, match, mismatch, indel, extension.
+#The first argument is the name of the file
+#The second, third, fourth and fifth value are integers
+
+
 
 #Read the file
-if len(sys.argv) != 2:
-    infile = input("Give the name of the infile: ")
+if len(sys.argv) == 6:
+    try:
+        infile = sys.argv[1]
+        match = sys.argv[2]
+        mismatch = sys.argv[3]
+        indel = sys.argv[4]
+        extension = sys.argv[5]
+    except ValueError:
+        print("One or more values weren't correct")
+        sys.exit(1)
+
+
 else:
-    infile = sys.argv[1]
+    infile = input("Give the name of the infile: ")
+    match = input("Give me the match value: ")
+    mismatch = input("Give me the mismatch value: ")
+    indel = input("Give me the indel value: ")
+    extension = input("Give me the extension value: ")
+
 
 
 
 (seq, title) = read_files(infile)
-matrix2 = alignment_simple(seq[0], seq[1], 1, -1, -1)
-#print(matrix2)
+matrix2 = alignment_simple(seq[0], seq[1], match, mismatch, indel)
 print(traceback(matrix2, seq[0], seq[1]))
 
 
+matrix = alignment_simple("GCATGCG", "GATTACA", 1, -1, -1)
+print_matrix(matrix)
+print(traceback(matrix, "GCATGCG", "GATTACA"))
 
-#matrix = alignment_simple("GCATGCG", "GATTACA", 1, -1, -1)
-#print_matrix(matrix)
-#print(traceback(matrix, "GCATGCG", "GATTACA"))
-#print_matrix(matrix2)
-#print(traceback(matrix2, seq[0], seq[1]))
+blosum_matrix("BLOSUM62.txt")
 
 
 
