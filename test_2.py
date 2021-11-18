@@ -1,89 +1,110 @@
 #!/usr/bin/env python3
 
-#Function for DNA samples
-#This function creates a list of lists with the matching scores
-def alignment_simple(string1, string2, match, mismatch, opening, exten):
+import sys
 
-    #Initialize the variables 
-    matrix = []
-    matrix_moves = []
-
-    nrow = len(string1) + 1
-    ncol = len(string2) + 1
-
-    #Create an empty matrix
-    for row in range(nrow):
-        matrix.append([])
-        matrix_moves.append([])
-        for col in range(ncol):
-            matrix[row].append(0)
-            matrix_moves[row].append(None)
+#Read the file
+if len(sys.argv) == 6:
+    try:
+        infile = sys.argv[1]
+        match = sys.argv[2]
+        mismatch = sys.argv[3]
+        indel = sys.argv[4]
+        extension = sys.argv[5]
+    except ValueError:
+        print("One or more values weren't correct")
+        sys.exit(1)
 
 
-    #Fill out the matrix
-    for row in range(nrow):
-        for col in range(ncol):
-            #In the first row we only calculate the values using the values from the left, so we start in position 1
-            if row == 0 and col !=0:
-                if matrix_moves[row][col-1] != "diag":
-                    matrix[row][col] = matrix[row][col-1] + exten
-                else:
-                    matrix[row][col] = matrix[row][col-1] + opening
-                matrix_moves[row][col] = "gap"
-
-            #In the first column we only calculate the values using the values from the top, so we start in row 1
-            elif row != 0 and col == 0:
-
-                if matrix_moves[row-1][col] != "diag":
-                    matrix[row][col] = matrix[row-1][col] + exten
-                else:
-                    matrix[row][col] = matrix[row-1][col] + opening
-                matrix_moves[row][col] = "gap"
-            
-            #When not in the first row and column, the values can be calculated from left, top or diagonal
-            elif row != 0 and col != 0:
-                if matrix_moves[row][col-1] != "diag":
-                    value_left = matrix[row][col-1] + exten
-                if matrix_moves[row-1][col] != "diag":
-                    value_top = matrix[row-1][col] + exten
-                else:
-                    value_left = matrix[row][col-1] + opening
-                    value_top = matrix[row-1][col] + opening
-
-            
-                #We compare the nucleotides in the strings
-                if string1[row-1] == string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + match
-
-                else:
-                    value_diag  = matrix[row-1][col-1] + mismatch
+else:
+    infile = input("Give the name of the infile: ")
+    match = input("Give me the match value: ")
+    mismatch = input("Give me the mismatch value: ")
+    indel = input("Give me the indel value: ")
+    extension = input("Give me the extension value: ")
 
 
-                #The correct values is going to be the maximum value from the 3 we have calculated above  
-                matrix[row][col] = max(value_diag, value_left, value_top)
-                list_values = [value_left, value_top, value_diag]
-                #print(list_values.index(max(list_values)))
+#Initialize the variables
+seq_list = []
+title = []
+sequences = ""
+nucleotides = ["A", "T", "G", "C"]
+amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
+                "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
+
+dna_flag_def = True
+protein_flag_def = True
+
+pos = 1
+
+#Try to open the file and generates an error message if it fails
+try:
+    infile = open(infile, 'r')
+except IOError as err:
+    print("can't open file, reason:", str(err))
+    sys.exit(1)
+
+#Saves the titles and the sequences in lists
+for line in infile:
+    if line.startswith('>'):
+        title.append(line[:-1])
+        #If in the next line after ">", sequences is not empty, it is added to seq_list
+        if sequences != "":
+            seq_list.append(sequences)
+        sequences = ""
+
+    else:
+        sequences += line[:-1] 
+
+#If after finishing the loop, there is still something in sequences, it is added to seq_list        
+if sequences != "":
+    seq_list.append(sequences)
+
+#Create an only string with the sequence
+seq = "".join(seq_list)
+
+#Assign the initial value for dna_flag and protein_flag according to the first position
+if seq[0] in nucleotides:
+    dna_flag = True
+
+if seq[0] not in nucleotides:
+    dna_flag = False
+    dna_flag_def = False
+
+if seq[0] in amino_acids:
+    protein_flag = True
+
+if seq[0] not in amino_acids:
+    protein_flag = False
+    protein_flag_def = False
+    
+
+#If none of the flags is True, it skips this part
+while pos < len(seq) and (dna_flag == True or protein_flag == True):
+    if seq[pos] in nucleotides:
+        dna_flag = True
+
+    #When it finds an element that is not a nucleotide, the definitive dna_flag is set to False
+    if seq[pos] not in nucleotides:
+        dna_flag_def = False
+
+    if seq[pos] in amino_acids:
+        protein_flag = True
+    
+    #When it finds an element that is not an amino acid, the definitive protein_flag is set to False
+    if seq[pos] not in amino_acids:
+        protein_flag_def = False
+
+    pos += 1
 
 
-                if list_values.index(max(list_values)) == 0:
-                    matrix_moves[row][col] = "diag"
-                else:
-                    matrix_moves[row][col] = "gap"
+#If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA
+#This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
+if dna_flag_def == True:
+    print("It's DNA")
+#If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein   
+elif protein_flag_def == True:
+    print("It's a protein")
+#If none of them is True, the file doesn't contain a proper sequence. 
+else:
+    print("The file doesn't contain a sequence")
 
-                
-    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t, matrix_moves
-
-
-#Function to print the matrix on screen
-def print_matrix(matrix):
-    for row in range(len(matrix)):
-        printlist = []
-        for column in range(len(matrix[row])):
-            printlist.append(str(matrix[row][column]))
-        print("\t".join(printlist))
-    print("\n")  
-
-(matrix, matrix_moves) = alignment_simple("GCATGCG", "GATTACA", 1, -1, -5, -1)
-print_matrix(matrix_moves)
-print_matrix(matrix)
