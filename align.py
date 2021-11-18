@@ -4,36 +4,6 @@
 import sys
 
 
-#This function reads the file and generates a list with the sequences and the names
-def read_files(infile):
-
-    #Initialize the variables
-    seq = []
-    title = []
-    sequences = ""
-
-    #Try to open the file and generates an error message if it fails
-    try:
-        infile = open(infile, 'r')
-    except IOError as err:
-        print("can't open file, reason:", str(err))
-        sys.exit(1)
-
-    #Saves the titles and the sequences in lists
-    for line in infile:
-        if line.startswith('>'):
-            title.append(line[:-1])
-            if sequences != "":
-                seq.append(sequences)
-            sequences = ""
-        else:
-            sequences += line[:-1] 
-
-    return seq, title
-
-
-
-
 #Function for creating the BLOSUM matrix (dicts of dicts) from a file  
 def blosum_matrix(file):
 
@@ -70,7 +40,7 @@ def blosum_matrix(file):
 
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
-def alignment_simple(string1, string2, match, mismatch, opening, exten):
+def alignment_dna(string1, string2, match, mismatch, opening, exten):
 
     #Initialize the variables 
     matrix = []
@@ -140,14 +110,14 @@ def alignment_simple(string1, string2, match, mismatch, opening, exten):
 
                 
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t, matrix_moves
+    return matrix_t
 
 
 
 
 #Function for protein sequences
 #It calculate the alignment scores using blosum
-def alignment_blosum(string1, string2, blosum_file, indel):
+def alignment_protein(string1, string2, blosum_file, indel):
 
     string1.upper()
     string2.upper()
@@ -184,10 +154,10 @@ def alignment_blosum(string1, string2, blosum_file, indel):
                 value_top = matrix[row-1][col] + indel
 
                 try:
-                    value_diag  = matrix[row-1][col-1] + blosum62[string1[row-1]][string2[col-1]]
+                    value_diag  = matrix[row-1][col-1] + blosum[string1[row-1]][string2[col-1]]
 
                 except KeyError:
-                    value_diag  = matrix[row-1][col-1] + blosum62[string2[col-1]][string1[row-1]]
+                    value_diag  = matrix[row-1][col-1] + blosum[string2[col-1]][string1[row-1]]
         
                 #The correct values is going to be the maximum value from the 3 we have calculated above   
                 matrix[row][col] = max(value_left, value_top, value_diag)
@@ -220,6 +190,7 @@ def traceback (matrix, seq1, seq2):
     align2 = seq2[row-1]
     #align_middle = "|"
     total_alignment = ""
+    #print(matrix)
 
 
     while row > 0 and col > 0:
@@ -306,10 +277,10 @@ def traceback (matrix, seq1, seq2):
 if len(sys.argv) == 6:
     try:
         infile = sys.argv[1]
-        match = sys.argv[2]
-        mismatch = sys.argv[3]
-        indel = sys.argv[4]
-        extension = sys.argv[5]
+        match = int(sys.argv[2])
+        mismatch = int(sys.argv[3])
+        indel = int(sys.argv[4])
+        extension = int(sys.argv[5])
     except ValueError:
         print("One or more values weren't correct")
         sys.exit(1)
@@ -317,10 +288,17 @@ if len(sys.argv) == 6:
 
 else:
     infile = input("Give the name of the infile: ")
-    match = input("Give me the match value: ")
-    mismatch = input("Give me the mismatch value: ")
-    indel = input("Give me the indel value: ")
-    extension = input("Give me the extension value: ")
+    match = int(input("Give me the match value: "))
+    mismatch = int(input("Give me the mismatch value: "))
+    indel = int(input("Give me the indel value: "))
+    extension = int(input("Give me the extension value: "))
+
+#Try to open the file and generates an error message if it fails
+try:
+    infile = open(infile, 'r')
+except IOError as err:
+    print("can't open file, reason:", str(err))
+    sys.exit(1)
 
 
 #Initialize the variables
@@ -336,12 +314,6 @@ protein_flag_def = True
 
 pos = 1
 
-#Try to open the file and generates an error message if it fails
-try:
-    infile = open(infile, 'r')
-except IOError as err:
-    print("can't open file, reason:", str(err))
-    sys.exit(1)
 
 #Saves the titles and the sequences in lists
 for line in infile:
@@ -351,13 +323,8 @@ for line in infile:
         if sequences != "":
             seq_list.append(sequences)
         sequences = ""
-
     else:
         sequences += line[:-1] 
-
-#If after finishing the loop, there is still something in sequences, it is added to seq_list        
-if sequences != "":
-    seq_list.append(sequences)
 
 #Create an only string with the sequence
 seq = "".join(seq_list)
@@ -397,28 +364,30 @@ while pos < len(seq) and (dna_flag == True or protein_flag == True):
     pos += 1
 
 
-#If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA
+
+#Once we know if it is DNA or protein, we can decide which alignment methods should the program use
+
+#If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
 #This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
 if dna_flag_def == True:
-    print("It's DNA")
-#If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein   
+    #matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)-1)
+    #print_matrix(matrix)
+    #print(traceback(matrix1, "GCATGCG", "GATTACA"))
+    #print(seq_list[0])
+    #print(seq_list[1])
+
+    matrix2 = alignment_dna(seq_list[0], seq_list[1], match, mismatch, indel, extension)
+    #print(matrix2)
+    print(traceback(matrix2, seq_list[0], seq_list[1]))
+
+#If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif protein_flag_def == True:
-    print("It's a protein")
+    blosum = blosum_matrix("BLOSUM62.txt")
+    matrix3 = alignment_protein(seq[0], seq[1], blosum, 1)
+    print("Needleman-Wunschman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+    print(traceback(matrix3, seq[0], seq[1]))
+
 #If none of them is True, the file doesn't contain a proper sequence. 
 else:
     print("The file doesn't contain a sequence")
-
-
-
-matrix2 = alignment_simple(seq[0], seq[1], match, mismatch, indel)
-print(traceback(matrix2, seq[0], seq[1]))
-
-
-matrix = alignment_simple("GCATGCG", "GATTACA", 1, -1, -1)
-print_matrix(matrix)
-print(traceback(matrix, "GCATGCG", "GATTACA"))
-
-
-
-blosum_matrix("BLOSUM62.txt")
 
