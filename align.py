@@ -13,6 +13,7 @@ def blosum_matrix(file):
     blosum_dict = dict()
     flag = False
 
+
     try:
         infile = open(file, 'r')
     except IOError:
@@ -22,18 +23,27 @@ def blosum_matrix(file):
         line_temp = "".join(line.split())
         first_row = re.match(r'^[A-Z]{23}\**', line_temp)
 
+        if flag :
+            blosum.append(line.split())
 
         if first_row != None:
+            line = "-" + line[:-1]
+            blosum.append(line.split())
             flag = True
-        if flag:
-            blosum.append(line[:-1].split())
 
         
 
+    
+    
     for row in range(len(blosum)):
         blosum_dict[blosum[row][0]] = {}
         for col in range(len(blosum[0])) :
-            blosum_dict[blosum[row][0]][blosum[0][col]] = blosum[row][col] 
+            if row == 0 or col == 0:
+                pass
+            else:
+                blosum_dict[blosum[row][0]][blosum[0][col]] = int(blosum[row][col])
+
+    return blosum_dict
 
 
 
@@ -117,10 +127,12 @@ def alignment_dna(string1, string2, match, mismatch, opening, exten):
 
 #Function for protein sequences
 #It calculate the alignment scores using blosum
-def alignment_protein(string1, string2, blosum_file, indel):
+def alignment_protein(string1, string2, blosum, indel):
 
     string1.upper()
     string2.upper()
+    #print(string1)
+    #print(string2)
 
     #Initialize the variables 
     matrix = []
@@ -152,16 +164,16 @@ def alignment_protein(string1, string2, blosum_file, indel):
                 #Indel -1
                 value_left = matrix[row][col-1] + indel
                 value_top = matrix[row-1][col] + indel
-
-                try:
-                    value_diag  = matrix[row-1][col-1] + blosum[string1[row-1]][string2[col-1]]
-
-                except KeyError:
-                    value_diag  = matrix[row-1][col-1] + blosum[string2[col-1]][string1[row-1]]
+                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+                #print(string1[row-1])
+                #print(string2[col-1])
+                #print(blosum[string1[row-1]][string2[col-1]])
         
                 #The correct values is going to be the maximum value from the 3 we have calculated above   
                 matrix[row][col] = max(value_left, value_top, value_diag)
-
+    
+    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
+    return matrix_t
 
 
 
@@ -181,16 +193,20 @@ def print_matrix(matrix):
 def traceback (matrix, seq1, seq2):
 
     #Initialize variables
-    row = len(matrix) - 1
-    col = len(matrix[0]) - 1
+    row = len(matrix) - 2
+    col = len(matrix[0]) - 2
+    #print(len(matrix))
+    #print(matrix[row-1][col-1])
+    #print(seq1)
+    #print(seq2)
 
     score = matrix[row][col]
 
-    align1 = seq1[col-1]
-    align2 = seq2[row-1]
+    align1 = seq1[col]
+    align2 = seq2[row]
+    #print(align1, align2)
     #align_middle = "|"
     total_alignment = ""
-    #print(matrix)
 
 
     while row > 0 and col > 0:
@@ -198,18 +214,20 @@ def traceback (matrix, seq1, seq2):
         diag_score = matrix[row-1][col-1]
         left_score = matrix[row][col-1]
         top_score = matrix[row-1][col]
+        values = [diag_score, left_score, top_score]
 
-        if diag_score > left_score or diag_score > top_score:
+
+        if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
             #align_middle = "|" + align_middle
-
+            #print(row, col)
             row = row - 1
             col = col - 1
             score += diag_score
 
 
-        if left_score > diag_score or left_score > top_score:
+        if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
             #align_middle = " " + align_middle
@@ -218,13 +236,15 @@ def traceback (matrix, seq1, seq2):
             score += left_score
 
 
-        if top_score > diag_score or top_score > left_score:
+        if values.index(max(values)) == 2:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2
-            #align_middle = " " + align_middle
+            #align_middle = " " + align_middle   
             
             row = row - 1
             score += top_score
+        
+
 
         else:
             align1 = seq1[col-1] + align1
@@ -233,6 +253,18 @@ def traceback (matrix, seq1, seq2):
 
             row = row - 1
             col = col - 1
+
+        if row == 0 and col == 1:
+            align1 = seq1[col-1] + align1
+            align2 = "-" + align2
+            #align_middle = "|" + align_middle
+            col = col - 1
+        
+        if row == 1 and col == 0:
+            align1 = "-" + align1
+            align2 = seq2[row-1] + align2
+            #align_middle = "|" + align_middle
+            row = row  - 1
 
 
     for i in range(0, len(align1), 60):
@@ -325,6 +357,9 @@ for line in infile:
         sequences = ""
     else:
         sequences += line[:-1] 
+if sequences != "":
+    seq_list.append(sequences)
+
 
 #Create an only string with the sequence
 seq = "".join(seq_list)
@@ -370,22 +405,29 @@ while pos < len(seq) and (dna_flag == True or protein_flag == True):
 #If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
 #This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
 if dna_flag_def == True:
-    #matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)-1)
+    matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
-    #print(traceback(matrix1, "GCATGCG", "GATTACA"))
-    #print(seq_list[0])
-    #print(seq_list[1])
+    print(traceback(matrix1, "GCATGCG", "GATTACA"))
 
     matrix2 = alignment_dna(seq_list[0], seq_list[1], match, mismatch, indel, extension)
     #print(matrix2)
+    print("Needleman-Wunschman alignment for:\n{}\n{}\n".format(title[0], title[1]))
     print(traceback(matrix2, seq_list[0], seq_list[1]))
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif protein_flag_def == True:
+
+    matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
+    #print_matrix(matrix)
+    print(traceback(matrix1, "GCATGCG", "GATTACA"))
+
+
     blosum = blosum_matrix("BLOSUM62.txt")
-    matrix3 = alignment_protein(seq[0], seq[1], blosum, 1)
+    #print(blosum)
+    matrix3 = alignment_protein(seq_list[0], seq_list[1], blosum, indel)
+    #print(matrix3)
     print("Needleman-Wunschman alignment for:\n{}\n{}\n".format(title[0], title[1]))
-    print(traceback(matrix3, seq[0], seq[1]))
+    print(traceback(matrix3, seq_list[0], seq_list[1]))
 
 #If none of them is True, the file doesn't contain a proper sequence. 
 else:
