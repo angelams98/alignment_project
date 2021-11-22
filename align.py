@@ -187,18 +187,8 @@ def alignment_protein(string1, string2, dna_prot, opening, exten):
                 if matrix_moves[row-1][col] == "diag":
                     value_top = matrix[row-1][col] + opening
 
-                if dna_prot == "prot":
-                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
 
-                if dna_prot == "dna":
-                    match = 1
-                    mistmatch = -1
-                    #We compare the nucleotides in the strings
-                    if string1[row-1] == string2[col-1]:
-                        value_diag  = matrix[row-1][col-1] + match
-
-                    if string1[row-1] != string2[col-1]:
-                        value_diag  = matrix[row-1][col-1] + mismatch
 
 
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
@@ -445,9 +435,9 @@ elif is_protein == True:
     indel = int(input("Give me the indel value: "))
     extension = int(input("Give me the extension value: "))
     print("The sequence was a protein.")
-    matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
+    #matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
-    print(traceback(matrix1, "GCATGCG", "GATTACA"))
+    #print(traceback(matrix1, "GCATGCG", "GATTACA"))
 
 
     blosum = blosum_matrix("BLOSUM62.txt")
