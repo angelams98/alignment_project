@@ -332,44 +332,42 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 
 
     #Fill out the matrix
-    for row in range(nrow):
-        for col in range(ncol):
+    for row in range(1, nrow):
+        for col in range(1, ncol):
 
-            #When not in the first row and column, the values can be calculated from left, top or diagonal
-            if row != 0 and col != 0:
-                if matrix_moves[row][col-1] != "diag":
-                    value_left = matrix[row][col-1] + exten
-                if matrix_moves[row-1][col] != "diag":
-                    value_top = matrix[row-1][col] + exten
-                if matrix_moves[row][col-1] == "diag":
-                    value_left = matrix[row][col-1] + exten
-                if matrix_moves[row-1][col] == "diag":
-                    value_top = matrix[row-1][col] + exten
+            if matrix_moves[row][col-1] != "diag":
+                value_left = matrix[row][col-1] + exten
+            if matrix_moves[row-1][col] != "diag":
+                value_top = matrix[row-1][col] + exten
+            if matrix_moves[row][col-1] == "diag":
+                value_left = matrix[row][col-1] + exten
+            if matrix_moves[row-1][col] == "diag":
+                value_top = matrix[row-1][col] + exten
+        
+            #We compare the nucleotides in the strings
+            if string1[row-1] == string2[col-1]:
+                value_diag  = matrix[row-1][col-1] + match
+
+            if string1[row-1] != string2[col-1]:
+                value_diag  = matrix[row-1][col-1] + mismatch
+
+
+            #The correct values is going to be the maximum value from the 3 we have calculated above  
             
-                #We compare the nucleotides in the strings
-                if string1[row-1] == string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + match
-
-                if string1[row-1] != string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + mismatch
+            if max(value_diag, value_left, value_top)<0:
+                matrix[row][col] = 0
+            if max(value_diag, value_left, value_top) >= 0:
+                matrix[row][col] = max(value_diag, value_left, value_top)
 
 
-                #The correct values is going to be the maximum value from the 3 we have calculated above  
-                
-                if max(value_diag, value_left, value_top)<0:
-                    matrix[row][col] = 0
-                if max(value_diag, value_left, value_top) >= 0:
-                    matrix[row][col] = max(value_diag, value_left, value_top)
+            list_values = [value_left, value_top, value_diag]
+            #print(list_values.index(max(list_values)))
 
 
-                list_values = [value_left, value_top, value_diag]
-                #print(list_values.index(max(list_values)))
-
-
-                if list_values.index(max(list_values)) == 0:
-                    matrix_moves[row][col] = "diag"
-                else:
-                    matrix_moves[row][col] = "gap"
+            if list_values.index(max(list_values)) == 0:
+                matrix_moves[row][col] = "diag"
+            else:
+                matrix_moves[row][col] = "gap"
 
                 
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
@@ -407,41 +405,39 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     #print(matrix)
 
     #Fill out the matrix
-    for row in range(nrow):
-        for col in range(ncol):
+    for row in range(1, nrow):
+        for col in range(1, ncol):
 
-            #When not in the first row and column, the values can be calculated from left, top or diagonal
-            if row != 0 and col != 0:
-                if matrix_moves[row][col-1] != "diag":
-                    value_left = matrix[row][col-1] + exten
+            if matrix_moves[row][col-1] != "diag":
+                value_left = matrix[row][col-1] + exten
 
-                if matrix_moves[row-1][col] != "diag":
-                    value_top = matrix[row-1][col] + exten
+            if matrix_moves[row-1][col] != "diag":
+                value_top = matrix[row-1][col] + exten
 
-                if matrix_moves[row][col-1] == "diag":
-                    value_left = matrix[row][col-1] + opening
+            if matrix_moves[row][col-1] == "diag":
+                value_left = matrix[row][col-1] + opening
 
-                if matrix_moves[row-1][col] == "diag":
-                    value_top = matrix[row-1][col] + opening
+            if matrix_moves[row-1][col] == "diag":
+                value_top = matrix[row-1][col] + opening
 
-                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+            value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
 
 
 
-                #The correct values is going to be the maximum value from the 3 we have calculated above  
-                if max(value_diag, value_left, value_top)<0:
-                    matrix[row][col] = 0
-                if max(value_diag, value_left, value_top) >= 0:
-                    matrix[row][col] = max(value_diag, value_left, value_top)
+            #The correct values is going to be the maximum value from the 3 we have calculated above  
+            if max(value_diag, value_left, value_top)<0:
+                matrix[row][col] = 0
+            if max(value_diag, value_left, value_top) >= 0:
+                matrix[row][col] = max(value_diag, value_left, value_top)
 
-                list_values = [value_left, value_top, value_diag]
-                #print(list_values.index(max(list_values)))
+            list_values = [value_left, value_top, value_diag]
+            #print(list_values.index(max(list_values)))
 
 
-                if list_values.index(max(list_values)) == 0:
-                    matrix_moves[row][col] = "diag"
-                else:
-                    matrix_moves[row][col] = "gap"
+            if list_values.index(max(list_values)) == 0:
+                matrix_moves[row][col] = "diag"
+            else:
+                matrix_moves[row][col] = "gap"
     
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
