@@ -2,12 +2,12 @@
 
 #Import libraries
 import sys
+import re
 
 
 #Function for creating the BLOSUM matrix (dicts of dicts) from a file  
 def blosum_matrix(file):
-
-    import re
+    """It takes a file with a blosum matrix and saves it as a dictionary of dictionaries"""
 
     blosum = []
     blosum_dict = dict()
@@ -31,9 +31,6 @@ def blosum_matrix(file):
             blosum.append(line.split())
             flag = True
 
-        
-
-    
     
     for row in range(len(blosum)):
         blosum_dict[blosum[row][0]] = {}
@@ -51,6 +48,7 @@ def blosum_matrix(file):
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
 def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
+    """Calculates a scoring matrix for two DNA sequences using Needleman-Wunsch's algorithm"""
 
     #Initialize the variables 
     matrix = []
@@ -130,6 +128,7 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
 
 ##ADD EXTENSION AND OPENING
 def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
+    """Calculates a scoring matrix for two protein sequences using Needleman-Wunsch's algorithm"""
 
     string1.upper()
     string2.upper()
@@ -209,7 +208,7 @@ def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
 
 #Function to print the matrix on screen
 def print_matrix(matrix):
-    """idjgljadglja"""
+    """Prints the matrix on screen in a clear way"""
     for row in range(len(matrix)):
         printlist = []
         for column in range(len(matrix[row])):
@@ -222,6 +221,7 @@ def print_matrix(matrix):
 
 #This function calculates the best alignment using the matching scores from the matrix
 def traceback_nw (matrix, seq1, seq2):
+    """Find the best alignment for two sequences using a scoring matrix"""
 
     #Initialize variables
     row = len(matrix) - 2
@@ -314,6 +314,7 @@ def traceback_nw (matrix, seq1, seq2):
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
 def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
+    """Calculates a scoring matrix for two DNA sequences using Smith-Waterman's algorithm"""
 
     #Initialize the variables 
     matrix = []
@@ -381,6 +382,7 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 
 ##ADD EXTENSION AND OPENING
 def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
+    """Calculates a scoring matrix for two protein sequences using Smith-Waterman's algorithm"""
 
     string1.upper()
     string2.upper()
