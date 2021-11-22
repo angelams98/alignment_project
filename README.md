@@ -5,3 +5,4 @@ tasks list
 - [ ] Finish theory
 - [ ] Include weaknesses and assumptions of our program 
 - [ ] Introduce Smith-Waterman alignment?
+- [ ] All the possible tracebacks?
