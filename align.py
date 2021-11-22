@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
 
-
-# Test comment
-# Another test comment
-
-
 #Import libraries
 import sys
 
@@ -416,8 +411,6 @@ if sequences != "":
 #Create an only string with the sequence
 seq = "".join(seq_list)
 
-
-print(seq)
 
 
 # Check if sequence from infile is either a DNA or a protein sequence
