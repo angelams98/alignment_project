@@ -686,10 +686,9 @@ elif is_protein == True:
     
     print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
     
-    output = traceback_ws(matrix3, seq_list[0], seq_list[1])
+    (output1, output2) = traceback_ws(matrix3, seq_list[0], seq_list[1])
 
-    for i in range(0, len(output[1]), 60):
-        print(output[0][i])
-        print(output[1][i])
+    for i in range(0, len(output1), 60):
+        print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
 
 
