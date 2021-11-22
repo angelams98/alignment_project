@@ -356,10 +356,12 @@ nucleotides = ["A", "T", "G", "C"]
 amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
                 "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
 
-dna_flag_def = True
-protein_flag_def = True
+# dna_flag_def = True
+# protein_flag_def = True
+# seq_type_flag = True
+is_protein = False
 
-pos = 1
+pos = 0
 
 
 #Saves the titles and the sequences in lists
@@ -379,58 +381,40 @@ if sequences != "":
 #Create an only string with the sequence
 seq = "".join(seq_list)
 
-#Assign the initial value for dna_flag and protein_flag according to the first position
-if seq[0] in nucleotides:
-    dna_flag = True
 
-if seq[0] not in nucleotides:
-    dna_flag = False
-    dna_flag_def = False
+print(seq)
 
-if seq[0] in amino_acids:
-    protein_flag = True
 
-if seq[0] not in amino_acids:
-    protein_flag = False
-    protein_flag_def = False
+# Check if sequence from infile is either a DNA or a protein sequence
+while pos < len(seq):
     
-
-#If none of the flags is True, it skips this part
-while pos < len(seq) and (dna_flag == True or protein_flag == True):
-    if seq[pos] in nucleotides:
-        dna_flag = True
-
-    #When it finds an element that is not a nucleotide, the definitive dna_flag is set to False
-    if seq[pos] not in nucleotides:
-        dna_flag_def = False
-
     if seq[pos] in amino_acids:
-        protein_flag = True
-    
-    #When it finds an element that is not an amino acid, the definitive protein_flag is set to False
-    if seq[pos] not in amino_acids:
-        protein_flag_def = False
-
-    pos += 1
-
+        is_protein = True
+        #print(is_protein)
+    elif seq[pos] not in amino_acids:
+        #print(is_protein)
+        print("The sequence found in the file", infile.name, "contained an impure sequence.")
+        sys.exit(1)
+        
+    pos = pos + 1
 
 
 #Once we know if it is DNA or protein, we can decide which alignment methods should the program use
 
 #If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
 #This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
-if dna_flag_def == True:
+if is_protein == False:
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
     print(traceback(matrix1, "GCATGCG", "GATTACA"))
 
     matrix2 = alignment_dna(seq_list[0], seq_list[1], match, mismatch, indel, extension)
     #print(matrix2)
-    print("Needleman-Wunschman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+    print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
     print(traceback(matrix2, seq_list[0], seq_list[1]))
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
-elif protein_flag_def == True:
+elif is_protein == True:
 
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
@@ -441,10 +425,7 @@ elif protein_flag_def == True:
     #print(blosum)
     matrix3 = alignment_protein(seq_list[0], seq_list[1], blosum, indel)
     #print(matrix3)
-    print("Needleman-Wunschman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+    print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
     print(traceback(matrix3, seq_list[0], seq_list[1]))
 
-#If none of them is True, the file doesn't contain a proper sequence. 
-else:
-    print("The file doesn't contain a sequence")
 
