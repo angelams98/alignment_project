@@ -385,10 +385,8 @@ sequences = ""
 nucleotides = ["A", "T", "G", "C"]
 amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
                 "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
+amino_acids_checker = ["D", "E", "F", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "V", "W", "Y"]
 
-# dna_flag_def = True
-# protein_flag_def = True
-# seq_type_flag = True
 is_protein = False
 
 pos = 0
@@ -416,7 +414,7 @@ seq = "".join(seq_list)
 # Check if sequence from infile is either a DNA or a protein sequence
 while pos < len(seq):
     
-    if seq[pos] in amino_acids:
+    if seq[pos] in amino_acids_checker:
         is_protein = True
         #print(is_protein)
     elif seq[pos] not in amino_acids:
@@ -432,6 +430,7 @@ while pos < len(seq):
 #If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
 #This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
 if is_protein == False:
+    print("The sequence was DNA")
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
     print(traceback(matrix1, "GCATGCG", "GATTACA"))
@@ -443,7 +442,7 @@ if is_protein == False:
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif is_protein == True:
-
+    print("The sequence was a protein.")
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
     print(traceback(matrix1, "GCATGCG", "GATTACA"))
@@ -451,7 +450,7 @@ elif is_protein == True:
 
     blosum = blosum_matrix("BLOSUM62.txt")
     #print(blosum)
-    matrix3 = alignment_protein(seq_list[0], seq_list[1], blosum, indel)
+    matrix3 = alignment_protein(seq_list[0], seq_list[1], blosum, indel, extension)
     #print(matrix3)
     print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
     print(traceback(matrix3, seq_list[0], seq_list[1]))
