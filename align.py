@@ -444,6 +444,83 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
 
+def traceback_ws (matrix, seq1, seq2):
+
+    matrix_max_value = -1
+    matrix_max_position_list = []
+    total_alignment_list = []
+    total_alignment_scores = []
+    
+    for row in range(len(matrix[0])):
+        for col in range(len(matrix[row][0])):
+            
+            if matrix[row][col] > matrix_max_value:
+                matrix_max_value = matrix[row][col]
+                
+                matrix_max_position_list = []
+                matrix_max_position_list.append([row, col])
+            
+            if matrix[row][col] == matrix_max_value:
+                matrix_max_position_list.append([row, col])
+            
+    for i in range(len(matrix_max_position_list)):
+        for row in range(matrix_max_position_list[i][0]):
+            for col in range(matrix_max_position_list[i][1]):
+                
+                align1 = seq1[col]
+                align2 = seq2[row]
+                total_alignment = ""
+                
+                score = matrix[row][col]
+                
+                diag_score = matrix[row-1][col-1]
+                left_score = matrix[row][col-1]
+                top_score = matrix[row-1][col]
+                values = [diag_score, left_score, top_score]
+                
+                while diag_score != 0:
+                    
+                    # Diagonal is highest
+                    if values.index(max(values)) == 0:
+                        align1 = seq1[col-1] + align1
+                        align2 = seq2[row-1] + align2
+                        #align_middle = "|" + align_middle
+                        #print(row, col)
+                        row = row - 1
+                        col = col - 1
+                        score += diag_score
+                        
+                    # left score is highest
+                    if values.index(max(values)) == 1:
+                        align1 = seq1[col-1] + align1
+                        align2 = "-" + align2
+                        #align_middle = " " + align_middle
+                        
+                        col = col - 1
+                        score += left_score
+                    
+                    # top score is highest
+                    if values.index(max(values)) == 2:
+                        align1 = "-" + align1
+                        align2 = seq2[row-1] + align2
+                        #align_middle = " " + align_middle   
+                        
+                        row = row - 1
+                        score += top_score
+            
+            
+
+
+        for j in range(0, len(align1), 60):
+            total_alignment += align1[j:j+60] + "\n" + align2[j:j+60] + "\n" + "\n"
+            
+            total_alignment_list.append(total_alignment)
+            total_alignment_scores.append(score)
+
+    return total_alignment_list[total_alignment_scores.index(max(total_alignment_scores))]
+
+
+
 #PSEUDOCODE
     #Call read_files function to get a list with the sequences we are going to align
     #(seq, title) = read_files("dna7.fsa")
