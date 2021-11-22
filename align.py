@@ -445,79 +445,98 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     return matrix_t
 
 def traceback_ws (matrix, seq1, seq2):
+    #print(matrix, seq1, seq2)
+    #print(len(seq1), len(seq2))
 
     matrix_max_value = -1
     matrix_max_position_list = []
-    total_alignment_list = []
+    total_align1 = []
+    total_align2 = []
     total_alignment_scores = []
     
-    for row in range(len(matrix[0])):
-        for col in range(len(matrix[row][0])):
-            
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+
+            if matrix[row][col] == matrix_max_value:
+                matrix_max_position_list.append([row, col])
+
             if matrix[row][col] > matrix_max_value:
                 matrix_max_value = matrix[row][col]
                 
                 matrix_max_position_list = []
                 matrix_max_position_list.append([row, col])
             
-            if matrix[row][col] == matrix_max_value:
-                matrix_max_position_list.append([row, col])
             
+
+    #print(matrix_max_position_list)
     for i in range(len(matrix_max_position_list)):
-        for row in range(matrix_max_position_list[i][0]):
-            for col in range(matrix_max_position_list[i][1]):
+        row = matrix_max_position_list[i][0]-1
+        col = matrix_max_position_list[i][1]-1
+        #print(col, len(seq1))
+        align1 = seq1[col]
+        align2 = seq2[row]
+        #print(align1, align2)
+        #print(row, col)
+        
+
+        diag_score = -1
+        total_alignment = ""
+
+        while diag_score != 0:
+
+            score = matrix[row][col]
+            diag_score = matrix[row-1][col-1]
+            left_score = matrix[row][col-1]
+            top_score = matrix[row-1][col]
+            values = [diag_score, left_score, top_score]
                 
-                align1 = seq1[col]
-                align2 = seq2[row]
-                total_alignment = ""
-                
-                score = matrix[row][col]
-                
-                diag_score = matrix[row-1][col-1]
-                left_score = matrix[row][col-1]
-                top_score = matrix[row-1][col]
-                values = [diag_score, left_score, top_score]
-                
-                while diag_score != 0:
                     
-                    # Diagonal is highest
-                    if values.index(max(values)) == 0:
-                        align1 = seq1[col-1] + align1
-                        align2 = seq2[row-1] + align2
-                        #align_middle = "|" + align_middle
-                        #print(row, col)
-                        row = row - 1
-                        col = col - 1
-                        score += diag_score
-                        
-                    # left score is highest
-                    if values.index(max(values)) == 1:
-                        align1 = seq1[col-1] + align1
-                        align2 = "-" + align2
-                        #align_middle = " " + align_middle
-                        
-                        col = col - 1
-                        score += left_score
-                    
-                    # top score is highest
-                    if values.index(max(values)) == 2:
-                        align1 = "-" + align1
-                        align2 = seq2[row-1] + align2
-                        #align_middle = " " + align_middle   
-                        
-                        row = row - 1
-                        score += top_score
+            # Diagonal is highest
+            if values.index(max(values)) == 0:
+                #print(align1)
+                align1 = seq1[col-1] + align1
+                align2 = seq2[row-1] + align2
+                #align_middle = "|" + align_middle
+                #print(row, col)
+                #print(align1 +"\n"+ align2)
+                row = row - 1
+                col = col - 1
+                score += diag_score
+                
+            # left score is highest
+            if values.index(max(values)) == 1:
+                align1 = seq1[col-1] + align1
+                align2 = "-" + align2
+                #align_middle = " " + align_middle
+                #print(row, col)
+                #print(align1 +"\n"+ align2)
+                col = col - 1
+                score += left_score
+            
+            # top score is highest
+            if values.index(max(values)) == 2:
+                align1 = "-" + align1
+                align2 = seq2[row-1] + align2
+                #align_middle = " " + align_middle   
+                #print(row, col)
+                #print(align1 +"\n"+ align2)
+                row = row - 1
+                score += top_score
             
             
+        
+
+        total_align1.append(align1)
+        total_align2.append(align2)
+        total_alignment_scores.append(score)
+
+        final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
+        final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
 
 
-        for j in range(0, len(align1), 60):
-            total_alignment += align1[j:j+60] + "\n" + align2[j:j+60] + "\n" + "\n"
-            
-            total_alignment_list.append(total_alignment)
-            total_alignment_scores.append(score)
-
-    return total_alignment_list[total_alignment_scores.index(max(total_alignment_scores))]
+    return final_align1, final_align2
+    #print(align1[j:j+60] + "\n" + align2[j:j+60] + "\n" + "\n")
+    #print(total_alignment_list)
 
 
 
@@ -634,12 +653,12 @@ if is_protein == False:
     print("The sequence was DNA")
     matrix1 = alignment_dna_sw("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     print_matrix(matrix1)
-    print(traceback_nw(matrix1, "GCATGCG", "GATTACA"))
+    print(traceback_ws(matrix1, "GCATGCG", "GATTACA"))
 
     matrix2 = alignment_dna_sw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
     #print(matrix2)
-    print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-    print(traceback_nw(matrix2, seq_list[0], seq_list[1]))
+    #print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
+    print(traceback_ws(matrix2, seq_list[0], seq_list[1]))
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif is_protein == True:
@@ -663,8 +682,14 @@ elif is_protein == True:
 
     
     matrix3 = alignment_protein_sw(seq_list[0], seq_list[1], blosum, indel, extension)
+    #print(matrix3)
     
     print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-    print(traceback_nw(matrix3, seq_list[0], seq_list[1]))
+    
+    output = traceback_ws(matrix3, seq_list[0], seq_list[1])
+
+    for i in range(0, len(output[1]), 60):
+        print(output[0][i])
+        print(output[1][i])
 
 
