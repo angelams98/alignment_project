@@ -107,7 +107,7 @@ def alignment_dna(string1, string2, match, mismatch, opening, exten):
                 #We compare the nucleotides in the strings
                 if string1[row-1] == string2[col-1]:
                     value_diag  = matrix[row-1][col-1] + match
-
+            ##FIX THIS
                 else:
                     value_diag  = matrix[row-1][col-1] + mismatch
 
@@ -132,12 +132,15 @@ def alignment_dna(string1, string2, match, mismatch, opening, exten):
 
 #Function for protein sequences
 #It calculate the alignment scores using blosum
+
+##ADD EXTENSION AND OPENING
 def alignment_protein(string1, string2, blosum, indel):
 
     string1.upper()
     string2.upper()
-    #print(string1)
-    #print(string2)
+    print(string1)
+
+    print(string2)
 
     #Initialize the variables 
     matrix = []
@@ -184,6 +187,7 @@ def alignment_protein(string1, string2, blosum, indel):
 
 #Function to print the matrix on screen
 def print_matrix(matrix):
+    """idjgljadglja"""
     for row in range(len(matrix)):
         printlist = []
         for column in range(len(matrix[row])):
@@ -258,6 +262,12 @@ def traceback (matrix, seq1, seq2):
 
             row = row - 1
             col = col - 1
+            #align1 = "-" + align1
+            #align2 = seq2[row-1] + align2
+            #align_middle = " " + align_middle   
+            
+            #row = row - 1
+            #score += top_score
 
         if row == 0 and col == 1:
             align1 = seq1[col-1] + align1
@@ -275,7 +285,7 @@ def traceback (matrix, seq1, seq2):
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
 
-    
+    print(score)
     return total_alignment
 
 
