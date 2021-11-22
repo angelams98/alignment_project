@@ -129,7 +129,7 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
 #It calculate the alignment scores using blosum
 
 ##ADD EXTENSION AND OPENING
-def alignment_protein(string1, string2, dna_prot, opening, exten):
+def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
 
     string1.upper()
     string2.upper()
@@ -221,7 +221,7 @@ def print_matrix(matrix):
 
 
 #This function calculates the best alignment using the matching scores from the matrix
-def traceback (matrix, seq1, seq2):
+def traceback_nw (matrix, seq1, seq2):
 
     #Initialize variables
     row = len(matrix) - 2
