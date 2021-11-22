@@ -146,8 +146,10 @@ def alignment_protein(string1, string2, dna_prot, opening, exten):
     #Create an empty matrix
     for row in range(nrow):
         matrix.append([])
+        matrix_moves.append([])
         for col in range(ncol):
             matrix[row].append(0)
+            matrix_moves[row].append(None)
 
     #print(matrix)
 
@@ -351,13 +353,10 @@ def traceback (matrix, seq1, seq2):
 
 
 #Read the file
-if len(sys.argv) == 6:
+if len(sys.argv) == 2:
     try:
         infile = sys.argv[1]
-        match = int(sys.argv[2])
-        mismatch = int(sys.argv[3])
-        indel = int(sys.argv[4])
-        extension = int(sys.argv[5])
+
     except ValueError:
         print("One or more values weren't correct")
         sys.exit(1)
@@ -365,10 +364,7 @@ if len(sys.argv) == 6:
 
 else:
     infile = input("Give the name of the infile: ")
-    match = int(input("Give me the match value: "))
-    mismatch = int(input("Give me the mismatch value: "))
-    indel = int(input("Give me the indel value: "))
-    extension = int(input("Give me the extension value: "))
+
 
 #Try to open the file and generates an error message if it fails
 try:
@@ -430,6 +426,10 @@ while pos < len(seq):
 #If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
 #This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
 if is_protein == False:
+    match = int(input("Give me the match value: "))
+    mismatch = int(input("Give me the mismatch value: "))
+    indel = int(input("Give me the indel value: "))
+    extension = int(input("Give me the extension value: "))
     print("The sequence was DNA")
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
@@ -442,6 +442,8 @@ if is_protein == False:
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif is_protein == True:
+    indel = int(input("Give me the indel value: "))
+    extension = int(input("Give me the extension value: "))
     print("The sequence was a protein.")
     matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
     #print_matrix(matrix)
