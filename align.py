@@ -387,9 +387,6 @@ amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L",
                 "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
 amino_acids_checker = ["D", "E", "F", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "V", "W", "Y"]
 
-# dna_flag_def = True
-# protein_flag_def = True
-# seq_type_flag = True
 is_protein = False
 
 pos = 0
