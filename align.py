@@ -50,7 +50,7 @@ def blosum_matrix(file):
 
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
-def alignment_dna(string1, string2, match, mismatch, opening, exten):
+def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
 
     #Initialize the variables 
     matrix = []
