@@ -566,6 +566,7 @@ if is_protein == False:
 
 #If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
 elif is_protein == True:
+    blosum_int = input("Give me which blosum matrix you want to use (introduce the number only):")
     indel = int(input("Give me the indel value: "))
     extension = int(input("Give me the extension value: "))
     print("The sequence was a protein.")
@@ -573,11 +574,19 @@ elif is_protein == True:
     #print_matrix(matrix)
     #print(traceback(matrix1, "GCATGCG", "GATTACA"))
 
+    if blosum_int == "62":
+        blosum = blosum_matrix("BLOSUM62.txt")
+    elif blosum_int == "80":
+        blosum = blosum_matrix("BLOSUM80.txt")
+    elif blosum_int == "50":
+        blosum = blosum_matrix("BLOSUM50.txt")
+    else:
+        print("I don't have that file, I am using BLOSUM62 instead")
+        blosum = blosum_matrix("BLOSUM62.txt")
 
-    blosum = blosum_matrix("BLOSUM62.txt")
-    #print(blosum)
+    
     matrix3 = alignment_protein_sw(seq_list[0], seq_list[1], blosum, indel, extension)
-    #print(matrix3)
+    
     print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
     print(traceback_nw(matrix3, seq_list[0], seq_list[1]))
 
