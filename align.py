@@ -331,15 +331,16 @@ def traceback_sw (matrix, seq1, seq2):
 
             #If we find the same value we already have, we save it to do the alignment for that position
             if matrix[row][col] == matrix_max_value:
-                #O(1)
+
+                #O(1), it is appending elements into a list
                 matrix_max_position_list.append([row, col])
 
             #If we find a higher value, we save the value and the position
             if matrix[row][col] > matrix_max_value:
                 matrix_max_value = matrix[row][col]
-                
                 matrix_max_position_list = []
-                #O(1)
+
+                #O(1), it is appending elements to a list
                 matrix_max_position_list.append([row, col])
             
     
@@ -399,11 +400,13 @@ def traceback_sw (matrix, seq1, seq2):
 
         total_align1.append(align1)
         total_align2.append(align2)
-        #O(1)
+        #O(1), it is appending elements to a list
         total_alignment_scores.append(score)
 
         #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
+        print(matrix_max_position_list[total_alignment_scores.index(max(total_alignment_scores))])
+        print(len(seq1), len(seq2))
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
 
 
@@ -529,11 +532,13 @@ if is_protein == False:
 
     print("What you have given me is a DNA sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
+    alignment.upper()
+    print(alignment)
     dna_prot = "dna"
     blosum = 0
 
     #O(q), q is the strings we are comparing in the conditional
-    if alignment in ("local", "LOCAL", "Local"):
+    if alignment == "GLOBAL":
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
@@ -550,7 +555,7 @@ if is_protein == False:
         print(traceback_nw(matrix, seq_list[0], seq_list[1]))
 
     #O(q), q is the strings we are comparing in the conditional
-    elif alignment in ("global", "GLOBAL", "Global"):
+    elif alignment == "LOCAL":
 
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
@@ -578,12 +583,13 @@ elif is_protein == True:
 
     print("What you have given me is a protein sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
+    alignment.upper()
     dna_prot = "protein"
     match = 0 
     mismatch = 0
 
     #O(q), q is the strings we are comparing in the conditional
-    if alignment in ("local", "LOCAL", "Local"):
+    if alignment == "GLOBAL" :
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
@@ -611,7 +617,7 @@ elif is_protein == True:
         
 
     #O(q), q is the strings we are comparing in the conditional
-    elif alignment in ("global", "GLOBAL", "Global"):
+    elif alignment == "LOCAL":
 
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
