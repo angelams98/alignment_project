@@ -7,7 +7,36 @@ import re
 
 #Function for creating the BLOSUM matrix (dicts of dicts) from a file  
 def blosum_matrix(file):
-    """It takes a file with a blosum matrix and saves it as a dictionary of dictionaries"""
+    """
+        Creates a BLOSUM matrix formatted as a dictionary of dictionaries.
+        PSEUDOCODE:
+            Open file
+        
+            # Saving the BLOSUM content of the file as a list of lists (= a "matrix")
+            For line in file:
+                Join line into a single string
+                Regex match first line of BLOSUM matrix
+                    
+                    If regex match found
+                        Save line to "matrix"
+                        Set flag to true
+                    
+                    If flag is true
+                        Save line to "matrix"
+            
+            # Creating dictionary of dictionaries
+            For row in range(number of rows in "matrix"):
+                For col in range(number of columns in "matrix"):
+                    
+                    outer key = matrix[row][0] (list of amino acids)
+                    value for outer key = inner key 
+                    inner key = matrix[0][col] (list of amino acods)
+                    value for inner key = matrix[row][col]
+        
+        :file: A .txt file from NCBI which contains a BLOSUM matrix
+        
+        :returns: A dictionary of dictionaries
+    """
 
     #Initialize variables
     blosum = []
@@ -51,7 +80,55 @@ def blosum_matrix(file):
 
 #This function creates a list of lists with the matching scores
 def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
-    """Calculates a scoring matrix for two DNA sequences using Needleman-Wunsch's algorithm"""
+        """
+        Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm
+        PSEUDOCODE:
+            Create two matrices (list of lists):
+                Dimensions: Rows = length of string1 + 1, columns = length of string2 + 1
+                1. Matrix for scores
+                2. matrix_moves for keeping track of whether a gap was introduced previously or not
+            
+            For row in range(length of string1+1):
+                For col in range(length of string2+1):
+                    
+                    If currently in the first row:
+                        check matrix_moves[cell to the left] to determine whether new gap is introduced or one is being continued
+                        matrix[row][col] = score from left cell + gap/extend penalty
+                        
+                    If currently in the first column:
+                        check matrix_moves[cell abive] to determine whether new gap is introduced or one is being continued
+                        matrix[row][col] = score from above cell + gap/extend penalty
+                    
+                    If elsewhere:
+                        if DNA
+                            check if the sequences match at this position
+                            if yes:
+                                score for diagonal path = diagonal cell score + match
+                            if no:
+                                score for diagonal path = diagonal cell score + mismatch
+                        if protein
+                            score for diagonal path = look up score in blosum matrix
+                            
+                        check matrix_moves[cells above and to the left] whether taking value from top or left would introduce or extend a gap
+                            calculate scores for left and top paths
+                            
+                        value of score matrix[row][col] = max of left/top/diagonal paths
+                        value of matrix_moves[row][col]:
+                            'gap' if max value came from top or left
+                            'diag' if max value came from diagonal
+    
+            Transpose matrix
+    
+        :string1: The first DNA/protein sequence to be aligned as a string
+        :string2: The other DNA/protein sequence to be aligned as a string
+        :dna_prot: A string which can be either 'DNA' or 'protein' which defines whether the sequences are protein or DNA
+        :match: A score for when the sequences match
+        :mismatch: A penalty for mismatching positions of the sequences
+        :opening: A penalty for opening a gap in the alignment
+        :exten: A penalty for extending a gap in the alignment
+    
+        :returns: A matrix of containing the scores of all possible alignments
+    """
 
     #Initialize the variables 
     matrix = []
@@ -143,7 +220,11 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
 #Function to print the matrix on screen
 def print_matrix(matrix):
-    """Prints the matrix on screen in a clear way"""
+   """
+        Prints a list of lists matrix on screen in a formatted way
+        
+        :matrix: A list of lists matrix     
+    """
     #O(m), m is the number of rows in the matrix
     for row in range(len(matrix)):
         printlist = []
@@ -158,70 +239,76 @@ def print_matrix(matrix):
 
 #This function calculates the best alignment using the matching scores from the matrix
 def traceback_nw (matrix, seq1, seq2):
-    """Find the best alignment for two sequences using a scoring matrix"""
+    """
+        Perform a traceback through a scoring matrix using the Needleman-Wunsch algorithm to find the best global alignment
+        PSEUDOCODE:
+            
+            Initialize row and col to the last cell of the matrix to start looping bottom to top
+            
+            While row > 0 or col > 0:
+                Look at scores in cells to the left, above and diagonal
+                
+                if diagonal score is highest:
+                    append letter from seq1 to align1
+                    append letter from seq2 to align2
+                    row = row-1
+                    col = col-1
+                
+                if left score is highest:
+                    append letter from seq1 to align1
+                    introduce gap "-" to align2
+                    col = col-1
+                    
+                if above score is highest:
+                    introduce gap "-" to align1
+                    append letter from seq2 to align2
+                    row = row-1
+                
+            for i in range(length of alignment):
+                save alignments as a string, 60 characters at a time separated by \n
+                
+        
+        :matrix: A list of lists containing a scoring matrix
+        :seq1: The first of the sequences to be aligned
+        :seq2: The second of the sequences to be aligned
+    
+        :return: \n-formatted string with total alignment
+    """
 
     #Initialize variables
     row = len(matrix) - 2
     col = len(matrix[0]) - 2
-
     score = matrix[row][col]
-
     align1 = seq1[col]
     align2 = seq2[row]
     total_alignment = ""
 
-    #O(m*n), m is the number of rows and n is the number of columns in the original matrix
-    while row > 0 and col > 0:
+    while row > 0 or col > 0:
     
         diag_score = matrix[row-1][col-1]
         left_score = matrix[row][col-1]
         top_score = matrix[row-1][col]
         values = [diag_score, left_score, top_score]
 
-
-        #Check if the diagonal score is the highest
-        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
-
             row = row - 1
             col = col - 1
+            score += diag_score
 
-        #Check if the left score is the highest
-        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
-            
             col = col - 1
+            score += left_score
 
-        #Check if the top score is the highest
-        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 2:
             align1 = "-" + align1
-            align2 = seq2[row-1] + align2   
-            
+            align2 = seq2[row-1] + align2 
             row = row - 1
-
-
-        #If we are in the first row and the second column, it can only go to the left
-        if row == 0 and col == 1:
-            align1 = seq1[col-1] + align1
-            align2 = "-" + align2
-
-            col = col - 1
+            score += top_score
         
-        #If we are in the second row and the first column, it can only go to the top
-        if row == 1 and col == 0:
-            align1 = "-" + align1
-            align2 = seq2[row-1] + align2
-
-            row = row  - 1
-
-
-    #Save the sequence in lines of 60 characters
-    #O(p), where p is the length of the strings
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
 
@@ -231,7 +318,50 @@ def traceback_nw (matrix, seq1, seq2):
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
 def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
-    """Calculates a scoring matrix for two DNA sequences using Smith-Waterman's algorithm"""
+    """
+        Calculates a scoring matrix for two DNA/protein sequences using the Smith-Waterman algorithm
+        PSEUDOCODE:
+            Create two matrices (list of lists):
+                Dimensions: Rows = length of string1 + 1, columns = length of string2 + 1
+                1. Matrix for scores
+                2. matrix_moves for keeping track of whether a gap was introduced previously or not
+            
+            For row in range(1, length of string1+1):
+                For col in range(1, length of string2+1):
+                    
+                    check matrix_moves[cells above and to the left] whether taking value from top or left would introduce or extend a gap
+                    calculate scores for left and top paths
+                    
+                    if DNA:
+                        check if the sequences match at this position
+                        if yes:
+                            score for diagonal path = diagonal cell score + match
+                        if no:
+                            score for diagonal path = diagonal cell score + mismatch
+                    
+                    if protein:
+                        score for diagonal path = look up score from blosum matrix
+                        
+                    find max score of left, above or diagonal. 
+                    If this is below 0, matrix[row][col] = 0
+                    If this is => 0, matrix[row][col] = max score
+
+                    value of matrix_moves[row][col]:
+                        'gap' if max value came from top or left
+                        'diag' if max value came from diagonal
+    
+            Transpose matrix
+    
+        :string1: The first DNA/protein sequence to be aligned as a string
+        :string2: The other DNA/protein sequence to be aligned as a string
+        :dna_prot: A string which can be either 'DNA' or 'protein' which defines whether the sequences are protein or DNA
+        :match: A score for when the sequences match
+        :mismatch: A penalty for mismatching positions of the sequences
+        :opening: A penalty for opening a gap in the alignment
+        :exten: A penalty for extending a gap in the alignment
+    
+        :returns: A matrix of containing the scores of all possible alignments
+    """
     
     #Initialize the variables 
     matrix = []
@@ -315,7 +445,47 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
 
 def traceback_sw (matrix, seq1, seq2):
-
+    """
+        Perform a traceback through a scoring matrix using the Smith-Waterman algorithm to find the best local alignment
+        PSEUDOCODE:
+            for row in matrix:
+                for col in matrix:
+                    loop over all positions, save coordinates of highest score(s) encountered to a list
+            
+            for i in range(number of places where the highest score of the matrix can be found):
+                row, col = coordinates saved in position i of high score list
+                
+                while a 0 is not encountered in diagonal:
+                    total score = score for starting point i
+                    
+                    find max of left, above and diagonal scores
+                    if diagonal max:
+                        no gap added
+                        row = row-1
+                        col = col-1
+                        total score = score + diagonal score
+                    
+                    if left max:
+                        gap in align2
+                        col = col-1
+                        total score = score + left score
+                        
+                    if above max:
+                        gap in align1
+                        row = row-1
+                        total score = score + above score
+                
+                Append align1 and align2 to list
+            
+            Final alignment is highest scoring (when there is more than one starting point)
+        
+        :matrix: A list of lists containing a scoring matrix
+        :seq1: The first of the sequences to be aligned
+        :seq2: The second of the sequences to be aligned
+        
+        :return: a tuple containing the aligned sequences
+    """
+    
     #Initialize the variables
     matrix_max_value = -1
     matrix_max_position_list = []
