@@ -311,7 +311,7 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 
         for col in range(ncol):
             matrix[row].append(0)
-            matrix_moves[row].append(None)
+            matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
@@ -390,7 +390,7 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
 
         for col in range(ncol):
             matrix[row].append(0)
-            matrix_moves[row].append(None)
+            matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
