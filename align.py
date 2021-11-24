@@ -16,10 +16,12 @@ def blosum_matrix(file):
 
 
     try:
+        #O(1)
         infile = open(file, 'r')
     except IOError:
         print("An error ocurred")
 
+    #O(k), k is the number of lines in the file
     for line in infile:
         line_temp = "".join(line.split())
         first_row = re.match(r'^[A-Z]{23}\**', line_temp)
@@ -32,8 +34,11 @@ def blosum_matrix(file):
             blosum.append(line.split())
             flag = True
 
+
+    #O(n), n is the number of rows
     for row in range(len(blosum)):
         blosum_dict[blosum[row][0]] = {}
+        #O(m), m is the number of cols
         for col in range(len(blosum[0])) :
             if row == 0 or col == 0:
                 pass
@@ -57,17 +62,22 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
 
     #Create an empty matrix
+    #O(m), m is the number of rows in the new matrix
     for row in range(nrow):
         matrix.append([])
         matrix_moves.append([])
 
+        #O(n), n is the number of columns in the new matrix
         for col in range(ncol):
             matrix[row].append(0)
-            matrix_moves[row].append(None)
+            matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
+    #O(m), m is the number of rows in the matrix
     for row in range(nrow):
+
+        #O(n), n is the number of columns in the matrix
         for col in range(ncol):
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
@@ -113,17 +123,19 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
             
 
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
+                #O(o), o is the number of elements it has to check
                 matrix[row][col] = max(value_diag, value_left, value_top)
                 list_values = [value_left, value_top, value_diag]
 
                 
                 #Check from which cell we have calculated the score to save the movement
+                #O(o), o is the number of elements it has to check
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
                 else:
                     matrix_moves[row][col] = "gap"
 
-                
+    #O(m*n), n is the number of rows in the matrix, n is the number of columns in the matrix
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
 
@@ -132,8 +144,10 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 #Function to print the matrix on screen
 def print_matrix(matrix):
     """Prints the matrix on screen in a clear way"""
+    #O(m), m is the number of rows in the matrix
     for row in range(len(matrix)):
         printlist = []
+        #O(n), n is the number of columns in the matrix
         for column in range(len(matrix[row])):
             printlist.append(str(matrix[row][column]))
         print("\t".join(printlist))
@@ -156,7 +170,7 @@ def traceback_nw (matrix, seq1, seq2):
     align2 = seq2[row]
     total_alignment = ""
 
-
+    #O(m*n), m is the number of rows and n is the number of columns in the original matrix
     while row > 0 and col > 0:
     
         diag_score = matrix[row-1][col-1]
@@ -166,6 +180,7 @@ def traceback_nw (matrix, seq1, seq2):
 
 
         #Check if the diagonal score is the highest
+        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
@@ -174,6 +189,7 @@ def traceback_nw (matrix, seq1, seq2):
             col = col - 1
 
         #Check if the left score is the highest
+        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
@@ -181,6 +197,7 @@ def traceback_nw (matrix, seq1, seq2):
             col = col - 1
 
         #Check if the top score is the highest
+        #O(O), o is the number of values it has to check
         if values.index(max(values)) == 2:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2   
@@ -204,6 +221,7 @@ def traceback_nw (matrix, seq1, seq2):
 
 
     #Save the sequence in lines of 60 characters
+    #O(p), where p is the length of the strings
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
 
@@ -224,17 +242,21 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
 
     #Create an empty matrix
+    #O(m), m is the number of rows of the new matrix
     for row in range(nrow):
         matrix.append([])
         matrix_moves.append([])
 
+        #O(n), n isthe number of columns of the new matrix
         for col in range(ncol):
             matrix[row].append(0)
-            matrix_moves[row].append(None)
+            matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
+    #O(m), m is the number of rows of the matrix
     for row in range(1, nrow):
+        #O(n), n is the number of rows of the matrix
         for col in range(1, ncol):
 
             #We check if the previous value was a gap, so the value score is for gap opening or extension
@@ -260,15 +282,17 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
                     value_diag  = matrix[row-1][col-1] + mismatch
 
             elif dna_prot == "protein":
-
+                #We calculate the score using the blosum matrix
                 value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
 
 
 
             #The correct value is going to be the maximum from the 3 we have calculated above  
+            #O(o), o is the number of elements it has to check
             if max(value_diag, value_left, value_top) >= 0:
                 matrix[row][col] = max(value_diag, value_left, value_top)
 
+            #O(o), o is the number of elements it has to check
             if max(value_diag, value_left, value_top) < 0:
                 #In Smith-Waterman, the minimum value is always 0    
                 matrix[row][col] = 0
@@ -277,13 +301,15 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
             list_values = [value_left, value_top, value_diag]
 
             #We store the cell from which we have calculated the score
+            #O(o), o is the number of elements it has to check
             if list_values.index(max(list_values)) == 0:
                 matrix_moves[row][col] = "diag"
 
             else:
                 matrix_moves[row][col] = "gap"
 
-                
+
+    #O(m*n), m is the number of rows and n is the number of columns of the matrix
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
 
@@ -298,11 +324,14 @@ def traceback_sw (matrix, seq1, seq2):
     total_alignment_scores = []
     
 
+    #O(m), m is the number of rows in the matrix
     for row in range(len(matrix)):
+        #O(n), n is the number of columns in the matrix
         for col in range(len(matrix[row])):
 
             #If we find the same value we already have, we save it to do the alignment for that position
             if matrix[row][col] == matrix_max_value:
+                #O(1)
                 matrix_max_position_list.append([row, col])
 
             #If we find a higher value, we save the value and the position
@@ -310,10 +339,12 @@ def traceback_sw (matrix, seq1, seq2):
                 matrix_max_value = matrix[row][col]
                 
                 matrix_max_position_list = []
+                #O(1)
                 matrix_max_position_list.append([row, col])
             
     
     #We do the alignments for all the maximum values we have saved
+    #O(p), p is the number of elements we have saved in matrix_max_position_list
     for i in range(len(matrix_max_position_list)):
 
         row = matrix_max_position_list[i][0]-1
@@ -325,6 +356,7 @@ def traceback_sw (matrix, seq1, seq2):
         diag_score = -1
         total_alignment = ""
 
+        #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
         while diag_score != 0:
 
             score = matrix[row][col]
@@ -335,6 +367,7 @@ def traceback_sw (matrix, seq1, seq2):
                 
                     
             #Check if the diagonal score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 0:
                 align1 = seq1[col-1] + align1
                 align2 = seq2[row-1] + align2
@@ -345,6 +378,7 @@ def traceback_sw (matrix, seq1, seq2):
                 
 
             #Check if the left score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 1:
                 align1 = seq1[col-1] + align1
                 align2 = "-" + align2
@@ -354,6 +388,7 @@ def traceback_sw (matrix, seq1, seq2):
             
 
             #Check if the top score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 2:
                 align1 = "-" + align1
                 align2 = seq2[row-1] + align2
@@ -364,8 +399,10 @@ def traceback_sw (matrix, seq1, seq2):
 
         total_align1.append(align1)
         total_align2.append(align2)
+        #O(1)
         total_alignment_scores.append(score)
 
+        #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
 
@@ -424,6 +461,7 @@ if re.search(r'\.\w+$', infile).group(0) in accepted_filetypes:
 
     #Try to open the file and generates an error message if it fails
     try:
+        #O(1), open a file
         infile = open(infile, 'r')
 
     except IOError as err:
@@ -448,6 +486,7 @@ pos = 0
 
 
 #Saves the titles and the sequences in lists
+#O(m), m is the number of lines in the file
 for line in infile:
     if line.startswith('>'):
         title.append(line[:-1])
@@ -469,11 +508,13 @@ seq = "".join(seq_list)
 
 
 # Check if sequence from infile is either a DNA or a protein sequence
+#O(n), n is the number of sequences (theoretically only 2)
 while pos < len(seq):
     
     if seq[pos] in amino_acids_checker:
         is_protein = True
 
+    #O(p), p is the number of elements in amino_acids list
     elif seq[pos] not in amino_acids:
         print("The sequence found in the file", infile.name, "contained an impure sequence.")
         sys.exit(1)
@@ -491,6 +532,7 @@ if is_protein == False:
     dna_prot = "dna"
     blosum = 0
 
+    #O(q), q is the strings we are comparing in the conditional
     if alignment in ("local", "LOCAL", "Local"):
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
@@ -507,7 +549,7 @@ if is_protein == False:
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(traceback_nw(matrix, seq_list[0], seq_list[1]))
 
-
+    #O(q), q is the strings we are comparing in the conditional
     elif alignment in ("global", "GLOBAL", "Global"):
 
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
@@ -523,6 +565,8 @@ if is_protein == False:
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        
+        #O(r), r is the length of the output1 sequence
         for i in range(0, len(output1), 60):
             print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
         print("The value for this alignment is", score)
@@ -538,6 +582,7 @@ elif is_protein == True:
     match = 0 
     mismatch = 0
 
+    #O(q), q is the strings we are comparing in the conditional
     if alignment in ("local", "LOCAL", "Local"):
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
@@ -565,7 +610,7 @@ elif is_protein == True:
         print(traceback_nw(matrix, seq_list[0], seq_list[1]))
         
 
-
+    #O(q), q is the strings we are comparing in the conditional
     elif alignment in ("global", "GLOBAL", "Global"):
 
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
@@ -593,6 +638,7 @@ elif is_protein == True:
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
+        #O(r), r is the length of the output1 sequence
         for i in range(0, len(output1), 60):
             print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
         print("The value for this alignment is", score)
