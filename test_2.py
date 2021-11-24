@@ -47,7 +47,7 @@ def blosum_matrix(file):
 
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
-def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
+def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
     """Calculates a scoring matrix for two DNA sequences using Needleman-Wunsch's algorithm"""
 
     #Initialize the variables 
@@ -90,6 +90,17 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
             
             #When not in the first row and column, the values can be calculated from left, top or diagonal
             elif row != 0 and col != 0:
+                if dna_prot == "dna":
+                    #We compare the nucleotides in the strings
+                    if string1[row-1] == string2[col-1]:
+                        value_diag  = matrix[row-1][col-1] + match
+
+                    if string1[row-1] != string2[col-1]:
+                        value_diag  = matrix[row-1][col-1] + mismatch
+
+                elif dna_prot == "protein":
+                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+
                 if matrix_moves[row][col-1] != "diag":
                     value_left = matrix[row][col-1] + exten
 
@@ -102,13 +113,6 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
                 if matrix_moves[row-1][col] == "diag":
                     value_top = matrix[row-1][col] + opening
             
-                #We compare the nucleotides in the strings
-                if string1[row-1] == string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + match
-
-                if string1[row-1] != string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + mismatch
-
 
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
                 matrix[row][col] = max(value_diag, value_left, value_top)
@@ -122,89 +126,6 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
                     matrix_moves[row][col] = "gap"
 
                 
-    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t
-
-
-
-
-#Function for protein sequences
-#It calculate the alignment scores using blosum
-
-def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
-    """Calculates a scoring matrix for two protein sequences using Needleman-Wunsch's algorithm"""
-
-    string1.upper()
-    string2.upper()
-
-
-    #Initialize the variables 
-    matrix = []
-    matrix_moves = []
-
-    nrow = len(string1) + 1
-    ncol = len(string2) + 1
-
-
-    #Create an empty matrix
-    for row in range(nrow):
-        matrix.append([])
-        matrix_moves.append([])
-
-        for col in range(ncol):
-            matrix[row].append(0)
-            matrix_moves[row].append(None)
-
-
-    #Fill out the matrix
-    for row in range(nrow):
-        for col in range(ncol):
-
-            #In the first row we only calculate the values using the values from the left, so we start in position 1
-            if row == 0 and col !=0:
-                if matrix_moves[row][col-1] != "diag":
-                    matrix[row][col] = matrix[row][col-1] + exten
-                else:
-                    matrix[row][col] = matrix[row][col-1] + opening
-                matrix_moves[row][col] = "gap"
-
-            #In the first column we only calculate the values using the values from the top, so we start in row 1
-            elif row != 0 and col == 0:
-
-                if matrix_moves[row-1][col] != "diag":
-                    matrix[row][col] = matrix[row-1][col] + exten
-                else:
-                    matrix[row][col] = matrix[row-1][col] + opening
-                matrix_moves[row][col] = "gap"
-            
-            #When not in the first row and column, the values can be calculated from left, top or diagonal
-            elif row != 0 and col != 0:
-                if matrix_moves[row][col-1] != "diag":
-                    value_left = matrix[row][col-1] + exten
-
-                if matrix_moves[row-1][col] != "diag":
-                    value_top = matrix[row-1][col] + exten
-
-                if matrix_moves[row][col-1] == "diag":
-                    value_left = matrix[row][col-1] + opening
-
-                if matrix_moves[row-1][col] == "diag":
-                    value_top = matrix[row-1][col] + opening
-
-                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
-
-
-                #The correct values is going to be the maximum value from the 3 we have calculated above  
-                matrix[row][col] = max(value_diag, value_left, value_top)
-                list_values = [value_left, value_top, value_diag]
-
-
-                #Check from which cell we have calculated the score to save the movement
-                if list_values.index(max(list_values)) == 0:
-                    matrix_moves[row][col] = "diag"
-                else:
-                    matrix_moves[row][col] = "gap"
-    
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
 
@@ -293,9 +214,9 @@ def traceback_nw (matrix, seq1, seq2):
 
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
-def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
+def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     """Calculates a scoring matrix for two DNA sequences using Smith-Waterman's algorithm"""
-
+    
     #Initialize the variables 
     matrix = []
     matrix_moves = []
@@ -332,12 +253,18 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
                 value_top = matrix[row-1][col] + opening
         
 
-            #We compare the nucleotides in the strings
-            if string1[row-1] == string2[col-1]:
-                value_diag  = matrix[row-1][col-1] + match
+            if dna_prot == "dna":
+                #We compare the nucleotides in the strings
+                if string1[row-1] == string2[col-1]:
+                    value_diag  = matrix[row-1][col-1] + match
 
-            if string1[row-1] != string2[col-1]:
-                value_diag  = matrix[row-1][col-1] + mismatch
+                if string1[row-1] != string2[col-1]:
+                    value_diag  = matrix[row-1][col-1] + mismatch
+
+            elif dna_prot == "protein":
+
+                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+
 
 
             #The correct value is going to be the maximum from the 3 we have calculated above  
@@ -363,77 +290,6 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
     return matrix_t
 
 
-
-
-#Function for protein sequences
-#It calculate the alignment scores using blosum
-
-
-def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
-    """Calculates a scoring matrix for two protein sequences using Smith-Waterman's algorithm"""
-
-    string1.upper()
-    string2.upper()
-
-    #Initialize the variables 
-    matrix = []
-    matrix_moves = []
-
-    nrow = len(string1) + 1
-    ncol = len(string2) + 1
-
-
-    #Create an empty matrix
-    for row in range(nrow):
-        matrix.append([])
-        matrix_moves.append([])
-
-        for col in range(ncol):
-            matrix[row].append(0)
-            matrix_moves[row].append(None)
-
-
-    #Fill out the matrix
-    for row in range(1, nrow):
-        for col in range(1, ncol):
-
-            #We check if the previous value was a gap, so the value score is for gap opening or extension
-            if matrix_moves[row][col-1] != "diag":
-                value_left = matrix[row][col-1] + exten
-
-            if matrix_moves[row-1][col] != "diag":
-                value_top = matrix[row-1][col] + exten
-
-            if matrix_moves[row][col-1] == "diag":
-                value_left = matrix[row][col-1] + opening
-
-            if matrix_moves[row-1][col] == "diag":
-                value_top = matrix[row-1][col] + opening
-
-            value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
-
-
-            #The correct value is going to be the maximum from the 3 we have calculated above  
-            if max(value_diag, value_left, value_top) >= 0:
-                matrix[row][col] = max(value_diag, value_left, value_top)
-
-            if max(value_diag, value_left, value_top) < 0:
-                #In Smith-Waterman, the minimum value is always 0    
-                matrix[row][col] = 0
-
-
-            list_values = [value_left, value_top, value_diag]
-
-            #We store the cell from which we have calculated the score
-            if list_values.index(max(list_values)) == 0:
-                matrix_moves[row][col] = "diag"
-
-            else:
-                matrix_moves[row][col] = "gap"
-
-    
-    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t
 
 
 
@@ -637,6 +493,8 @@ if is_protein == False:
 
     print("What you have given me is a DNA sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
+    dna_prot = "dna"
+    blosum = 0
 
     if alignment in ("local", "LOCAL", "Local"):
 
@@ -649,8 +507,8 @@ if is_protein == False:
         extension = int(input("Give me the extension value: "))
         print("\n")
 
-        matrix = alignment_dna_nw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
-
+        
+        matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(traceback_nw(matrix, seq_list[0], seq_list[1]))
 
@@ -666,8 +524,8 @@ if is_protein == False:
         extension = int(input("Give me the extension value: "))
         print("\n")
 
-        matrix = alignment_dna_sw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
-        (output1, output2, score) = traceback_ws(matrix, seq_list[0], seq_list[1])
+        matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         for i in range(0, len(output1), 60):
@@ -681,6 +539,9 @@ elif is_protein == True:
 
     print("What you have given me is a protein sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
+    dna_prot = "protein"
+    match = 0 
+    mismatch = 0
 
     if alignment in ("local", "LOCAL", "Local"):
 
@@ -702,8 +563,8 @@ elif is_protein == True:
             print("I don't have that file, I am using BLOSUM62 instead\n")
             blosum = blosum_matrix("BLOSUM62.txt")
 
-    
-        matrix = alignment_protein_nw(seq_list[0], seq_list[1], blosum, indel, extension)
+        
+        matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, indel, extension, match, mismatch)
 
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(traceback_nw(matrix, seq_list[0], seq_list[1]))
@@ -732,10 +593,10 @@ elif is_protein == True:
             blosum = blosum_matrix("BLOSUM62.txt")
 
     
-        matrix = alignment_protein_sw(seq_list[0], seq_list[1], blosum, indel, extension)
+        matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        (output1, output2, score) = traceback_ws(matrix, seq_list[0], seq_list[1])
+        (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
         for i in range(0, len(output1), 60):
             print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
