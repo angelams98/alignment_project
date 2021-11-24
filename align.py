@@ -80,54 +80,54 @@ def blosum_matrix(file):
 
 #This function creates a list of lists with the matching scores
 def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
-        """
-        Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm
-        PSEUDOCODE:
-            Create two matrices (list of lists):
-                Dimensions: Rows = length of string1 + 1, columns = length of string2 + 1
-                1. Matrix for scores
-                2. matrix_moves for keeping track of whether a gap was introduced previously or not
-            
-            For row in range(length of string1+1):
-                For col in range(length of string2+1):
+    """
+    Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm
+    PSEUDOCODE:
+        Create two matrices (list of lists):
+            Dimensions: Rows = length of string1 + 1, columns = length of string2 + 1
+            1. Matrix for scores
+            2. matrix_moves for keeping track of whether a gap was introduced previously or not
+        
+        For row in range(length of string1+1):
+            For col in range(length of string2+1):
+                
+                If currently in the first row:
+                    check matrix_moves[cell to the left] to determine whether new gap is introduced or one is being continued
+                    matrix[row][col] = score from left cell + gap/extend penalty
                     
-                    If currently in the first row:
-                        check matrix_moves[cell to the left] to determine whether new gap is introduced or one is being continued
-                        matrix[row][col] = score from left cell + gap/extend penalty
+                If currently in the first column:
+                    check matrix_moves[cell abive] to determine whether new gap is introduced or one is being continued
+                    matrix[row][col] = score from above cell + gap/extend penalty
+                
+                If elsewhere:
+                    if DNA
+                        check if the sequences match at this position
+                        if yes:
+                            score for diagonal path = diagonal cell score + match
+                        if no:
+                            score for diagonal path = diagonal cell score + mismatch
+                    if protein
+                        score for diagonal path = look up score in blosum matrix
                         
-                    If currently in the first column:
-                        check matrix_moves[cell abive] to determine whether new gap is introduced or one is being continued
-                        matrix[row][col] = score from above cell + gap/extend penalty
-                    
-                    If elsewhere:
-                        if DNA
-                            check if the sequences match at this position
-                            if yes:
-                                score for diagonal path = diagonal cell score + match
-                            if no:
-                                score for diagonal path = diagonal cell score + mismatch
-                        if protein
-                            score for diagonal path = look up score in blosum matrix
-                            
-                        check matrix_moves[cells above and to the left] whether taking value from top or left would introduce or extend a gap
-                            calculate scores for left and top paths
-                            
-                        value of score matrix[row][col] = max of left/top/diagonal paths
-                        value of matrix_moves[row][col]:
-                            'gap' if max value came from top or left
-                            'diag' if max value came from diagonal
-    
-            Transpose matrix
-    
-        :string1: The first DNA/protein sequence to be aligned as a string
-        :string2: The other DNA/protein sequence to be aligned as a string
-        :dna_prot: A string which can be either 'DNA' or 'protein' which defines whether the sequences are protein or DNA
-        :match: A score for when the sequences match
-        :mismatch: A penalty for mismatching positions of the sequences
-        :opening: A penalty for opening a gap in the alignment
-        :exten: A penalty for extending a gap in the alignment
-    
-        :returns: A matrix of containing the scores of all possible alignments
+                    check matrix_moves[cells above and to the left] whether taking value from top or left would introduce or extend a gap
+                        calculate scores for left and top paths
+                        
+                    value of score matrix[row][col] = max of left/top/diagonal paths
+                    value of matrix_moves[row][col]:
+                        'gap' if max value came from top or left
+                        'diag' if max value came from diagonal
+
+        Transpose matrix
+
+    :string1: The first DNA/protein sequence to be aligned as a string
+    :string2: The other DNA/protein sequence to be aligned as a string
+    :dna_prot: A string which can be either 'DNA' or 'protein' which defines whether the sequences are protein or DNA
+    :match: A score for when the sequences match
+    :mismatch: A penalty for mismatching positions of the sequences
+    :opening: A penalty for opening a gap in the alignment
+    :exten: A penalty for extending a gap in the alignment
+
+    :returns: A matrix of containing the scores of all possible alignments
     """
 
     #Initialize the variables 
@@ -220,7 +220,7 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
 #Function to print the matrix on screen
 def print_matrix(matrix):
-   """
+    """
         Prints a list of lists matrix on screen in a formatted way
         
         :matrix: A list of lists matrix     
@@ -575,8 +575,6 @@ def traceback_sw (matrix, seq1, seq2):
 
         #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
-        print(matrix_max_position_list[total_alignment_scores.index(max(total_alignment_scores))])
-        print(len(seq1), len(seq2))
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
 
 
@@ -753,7 +751,8 @@ elif is_protein == True:
 
     print("What you have given me is a protein sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
-    alignment.upper()
+    alignment = alignment.upper()
+    print(alignment)
     dna_prot = "protein"
     match = 0 
     mismatch = 0
