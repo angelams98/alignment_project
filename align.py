@@ -569,7 +569,7 @@ def traceback_ws (matrix, seq1, seq2):
 #http://www.cbcb.umd.edu/confcour/CMSC423-materials/BLOSUM80.txt
 #https://github.com/noporpoise/seq-align/blob/master/scoring/BLOSUM50.txt
 
-
+accepted_filetypes = ['.fsa', '.fasta', '.fna']
 
 #Read the file
 if len(sys.argv) == 2:
@@ -584,12 +584,17 @@ if len(sys.argv) == 2:
 else:
     infile = input("Give the name of the infile: ")
 
+# Check that the specified file is a fasta file
+if re.search(r'\.\w+$', infile).group(0) in accepted_filetypes:
 
-#Try to open the file and generates an error message if it fails
-try:
-    infile = open(infile, 'r')
-except IOError as err:
-    print("can't open file, reason:", str(err))
+    #Try to open the file and generates an error message if it fails
+    try:
+        infile = open(infile, 'r')
+    except IOError as err:
+        print("can't open file, reason:", str(err))
+        sys.exit(1)
+else:
+    print('The given file was not a fasta-file.')
     sys.exit(1)
 
 
