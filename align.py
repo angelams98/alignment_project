@@ -31,7 +31,6 @@ def blosum_matrix(file):
             blosum.append(line.split())
             flag = True
 
-    
     for row in range(len(blosum)):
         blosum_dict[blosum[row][0]] = {}
         for col in range(len(blosum[0])) :
@@ -57,10 +56,12 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
     nrow = len(string1) + 1
     ncol = len(string2) + 1
 
+
     #Create an empty matrix
     for row in range(nrow):
         matrix.append([])
         matrix_moves.append([])
+
         for col in range(ncol):
             matrix[row].append(0)
             matrix_moves[row].append(None)
@@ -108,9 +109,9 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
                 matrix[row][col] = max(value_diag, value_left, value_top)
                 list_values = [value_left, value_top, value_diag]
-                #print(list_values.index(max(list_values)))
 
-
+                
+                #Check from which cell we have calculated the score to save the movement
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
                 else:
@@ -126,35 +127,35 @@ def alignment_dna_nw(string1, string2, match, mismatch, opening, exten):
 #Function for protein sequences
 #It calculate the alignment scores using blosum
 
-##ADD EXTENSION AND OPENING
 def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
     """Calculates a scoring matrix for two protein sequences using Needleman-Wunsch's algorithm"""
 
     string1.upper()
     string2.upper()
 
+
     #Initialize the variables 
     matrix = []
     matrix_moves = []
 
-    #print(string1, string2)
-
     nrow = len(string1) + 1
     ncol = len(string2) + 1
+
 
     #Create an empty matrix
     for row in range(nrow):
         matrix.append([])
         matrix_moves.append([])
+
         for col in range(ncol):
             matrix[row].append(0)
             matrix_moves[row].append(None)
 
-    #print(matrix)
 
     #Fill out the matrix
     for row in range(nrow):
         for col in range(ncol):
+
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
                 if matrix_moves[row][col-1] != "diag":
@@ -189,13 +190,12 @@ def alignment_protein_nw(string1, string2, dna_prot, opening, exten):
                 value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
 
 
-
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
                 matrix[row][col] = max(value_diag, value_left, value_top)
                 list_values = [value_left, value_top, value_diag]
-                #print(list_values.index(max(list_values)))
 
 
+                #Check from which cell we have calculated the score to save the movement
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
                 else:
@@ -226,17 +226,11 @@ def traceback_nw (matrix, seq1, seq2):
     #Initialize variables
     row = len(matrix) - 2
     col = len(matrix[0]) - 2
-    #print(len(matrix))
-    #print(matrix[row-1][col-1])
-    #print(seq1)
-    #print(seq2)
 
     score = matrix[row][col]
 
     align1 = seq1[col]
     align2 = seq2[row]
-    #print(align1, align2)
-    #align_middle = "|"
     total_alignment = ""
 
 
@@ -248,62 +242,48 @@ def traceback_nw (matrix, seq1, seq2):
         values = [diag_score, left_score, top_score]
 
 
+        #Check if the diagonal score is the highest
         if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
-            #align_middle = "|" + align_middle
-            #print(row, col)
+
             row = row - 1
             col = col - 1
             score += diag_score
 
-
+        #Check if the left score is the highest
         if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
-            #align_middle = " " + align_middle
             
             col = col - 1
             score += left_score
 
-
+        #Check if the top score is the highest
         if values.index(max(values)) == 2:
             align1 = "-" + align1
-            align2 = seq2[row-1] + align2
-            #align_middle = " " + align_middle   
+            align2 = seq2[row-1] + align2   
             
             row = row - 1
             score += top_score
-        
 
 
-        else:
-            align1 = seq1[col-1] + align1
-            align2 = seq2[row-1] + align2
-            #align_middle = "|" + align_middle
-
-            row = row - 1
-            col = col - 1
-            #align1 = "-" + align1
-            #align2 = seq2[row-1] + align2
-            #align_middle = " " + align_middle   
-            
-            #row = row - 1
-            #score += top_score
-
+        #If we are in the first row and the second column, it can only go to the left
         if row == 0 and col == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
-            #align_middle = "|" + align_middle
+
             col = col - 1
         
+        #If we are in the second row and the first column, it can only go to the top
         if row == 1 and col == 0:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2
-            #align_middle = "|" + align_middle
+
             row = row  - 1
 
 
+    #Save the sequence in lines of 60 characters
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
 
@@ -354,7 +334,6 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 
 
             #The correct values is going to be the maximum value from the 3 we have calculated above  
-            
             if max(value_diag, value_left, value_top)<0:
                 matrix[row][col] = 0
             if max(value_diag, value_left, value_top) >= 0:
@@ -362,7 +341,6 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 
 
             list_values = [value_left, value_top, value_diag]
-            #print(list_values.index(max(list_values)))
 
 
             if list_values.index(max(list_values)) == 0:
@@ -380,7 +358,7 @@ def alignment_dna_sw(string1, string2, match, mismatch, opening, exten):
 #Function for protein sequences
 #It calculate the alignment scores using blosum
 
-##ADD EXTENSION AND OPENING
+
 def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     """Calculates a scoring matrix for two protein sequences using Smith-Waterman's algorithm"""
 
@@ -391,10 +369,9 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     matrix = []
     matrix_moves = []
 
-    #print(string1, string2)
-
     nrow = len(string1) + 1
     ncol = len(string2) + 1
+
 
     #Create an empty matrix
     for row in range(nrow):
@@ -404,7 +381,6 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
             matrix[row].append(0)
             matrix_moves[row].append(None)
 
-    #print(matrix)
 
     #Fill out the matrix
     for row in range(1, nrow):
@@ -433,7 +409,6 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
                 matrix[row][col] = max(value_diag, value_left, value_top)
 
             list_values = [value_left, value_top, value_diag]
-            #print(list_values.index(max(list_values)))
 
 
             if list_values.index(max(list_values)) == 0:
@@ -444,10 +419,9 @@ def alignment_protein_sw(string1, string2, dna_prot, opening, exten):
     matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
     return matrix_t
 
-def traceback_ws (matrix, seq1, seq2):
-    #print(matrix, seq1, seq2)
-    #print(len(seq1), len(seq2))
+def traceback_sw (matrix, seq1, seq2):
 
+    #Initialize the variables
     matrix_max_value = -1
     matrix_max_position_list = []
     total_align1 = []
@@ -467,18 +441,13 @@ def traceback_ws (matrix, seq1, seq2):
                 matrix_max_position_list.append([row, col])
             
             
-
-    #print(matrix_max_position_list)
     for i in range(len(matrix_max_position_list)):
         row = matrix_max_position_list[i][0]-1
         col = matrix_max_position_list[i][1]-1
-        #print(col, len(seq1))
+
         align1 = seq1[col]
         align2 = seq2[row]
-        #print(align1, align2)
-        #print(row, col)
         
-
         diag_score = -1
         total_alignment = ""
 
@@ -493,38 +462,31 @@ def traceback_ws (matrix, seq1, seq2):
                     
             # Diagonal is highest
             if values.index(max(values)) == 0:
-                #print(align1)
                 align1 = seq1[col-1] + align1
                 align2 = seq2[row-1] + align2
-                #align_middle = "|" + align_middle
-                #print(row, col)
-                #print(align1 +"\n"+ align2)
+            
                 row = row - 1
                 col = col - 1
                 score += diag_score
                 
+
             # left score is highest
             if values.index(max(values)) == 1:
                 align1 = seq1[col-1] + align1
                 align2 = "-" + align2
-                #align_middle = " " + align_middle
-                #print(row, col)
-                #print(align1 +"\n"+ align2)
+        
                 col = col - 1
                 score += left_score
             
+
             # top score is highest
             if values.index(max(values)) == 2:
                 align1 = "-" + align1
                 align2 = seq2[row-1] + align2
-                #align_middle = " " + align_middle   
-                #print(row, col)
-                #print(align1 +"\n"+ align2)
+        
                 row = row - 1
                 score += top_score
             
-            
-        
 
         total_align1.append(align1)
         total_align2.append(align2)
@@ -535,8 +497,6 @@ def traceback_ws (matrix, seq1, seq2):
 
 
     return final_align1, final_align2
-    #print(align1[j:j+60] + "\n" + align2[j:j+60] + "\n" + "\n")
-    #print(total_alignment_list)
 
 
 
@@ -576,13 +536,14 @@ if len(sys.argv) == 2:
     try:
         infile = sys.argv[1]
 
-    except ValueError:
-        print("One or more values weren't correct")
+    except IOError:
+        print("The file you introduce is not accessible")
         sys.exit(1)
-
 
 else:
     infile = input("Give the name of the infile: ")
+
+
 
 # Check that the specified file is a fasta file
 if re.search(r'\.\w+$', infile).group(0) in accepted_filetypes:
@@ -590,9 +551,11 @@ if re.search(r'\.\w+$', infile).group(0) in accepted_filetypes:
     #Try to open the file and generates an error message if it fails
     try:
         infile = open(infile, 'r')
+
     except IOError as err:
         print("can't open file, reason:", str(err))
         sys.exit(1)
+
 else:
     print('The given file was not a fasta-file.')
     sys.exit(1)
@@ -606,9 +569,7 @@ nucleotides = ["A", "T", "G", "C"]
 amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
                 "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
 amino_acids_checker = ["D", "E", "F", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "V", "W", "Y"]
-
 is_protein = False
-
 pos = 0
 
 
@@ -616,12 +577,15 @@ pos = 0
 for line in infile:
     if line.startswith('>'):
         title.append(line[:-1])
+
         #If in the next line after ">", sequences is not empty, it is added to seq_list
         if sequences != "":
             seq_list.append(sequences)
         sequences = ""
+
     else:
         sequences += line[:-1] 
+
 if sequences != "":
     seq_list.append(sequences)
 
@@ -630,15 +594,13 @@ if sequences != "":
 seq = "".join(seq_list)
 
 
-
 # Check if sequence from infile is either a DNA or a protein sequence
 while pos < len(seq):
     
     if seq[pos] in amino_acids_checker:
         is_protein = True
-        #print(is_protein)
+
     elif seq[pos] not in amino_acids:
-        #print(is_protein)
         print("The sequence found in the file", infile.name, "contained an impure sequence.")
         sys.exit(1)
         
@@ -647,53 +609,111 @@ while pos < len(seq):
 
 #Once we know if it is DNA or protein, we can decide which alignment methods should the program use
 
-#If the definitive dna_flag hasn't changed in the sequence, it is still True and it is a DNA.
-#This condition goes first because protein contains the same letters, so protein_flag_def must be True too.
+#They are DNA sequences
 if is_protein == False:
-    match = int(input("Give me the match value: "))
-    mismatch = int(input("Give me the mismatch value: "))
-    indel = int(input("Give me the indel value: "))
-    extension = int(input("Give me the extension value: "))
 
-    print("The sequence was DNA")
-    matrix1 = alignment_dna_sw("GCATGCG", "GATTACA", match, mismatch, indel, extension)
-    print_matrix(matrix1)
-    print(traceback_ws(matrix1, "GCATGCG", "GATTACA"))
+    print("What you have given me is a DNA sequence \n")
+    alignment = input("So do you want to do local or global alignment?\n")
 
-    matrix2 = alignment_dna_sw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
-    #print(matrix2)
-    #print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-    print(traceback_ws(matrix2, seq_list[0], seq_list[1]))
+    if alignment in ("local", "LOCAL", "Local"):
 
-#If the definitive protein_flag hasn't changed in the sequence, it is still True and it is a protein  
+        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
+        print("Please tell me which parameters you want to use\n")
+
+        match = int(input("Give me the match value: "))
+        mismatch = int(input("Give me the mismatch value: "))
+        indel = int(input("Give me the indel value: "))
+        extension = int(input("Give me the extension value: "))
+        print("\n")
+
+        matrix = alignment_dna_nw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
+
+        print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+
+
+    elif alignment in ("global", "GLOBAL", "Global"):
+
+        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
+        print("Please tell me which parameters you want to use\n")
+
+        match = int(input("Give me the match value: "))
+        mismatch = int(input("Give me the mismatch value: "))
+        indel = int(input("Give me the indel value: "))
+        extension = int(input("Give me the extension value: "))
+        print("\n")
+
+        matrix = alignment_dna_sw(seq_list[0], seq_list[1], match, mismatch, indel, extension)
+        (output1, output2) = traceback_sw(matrix, seq_list[0], seq_list[1])
+
+        print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        for i in range(0, len(output1), 60):
+            print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
+        
+
+
+#They are protein sequences
 elif is_protein == True:
-    blosum_int = input("Give me which blosum matrix you want to use (introduce the number only):")
-    indel = int(input("Give me the indel value: "))
-    extension = int(input("Give me the extension value: "))
-    print("The sequence was a protein.")
-    #matrix1 = alignment_dna("GCATGCG", "GATTACA", match, mismatch, indel, extension)
-    #print_matrix(matrix)
-    #print(traceback(matrix1, "GCATGCG", "GATTACA"))
 
-    if blosum_int == "62":
-        blosum = blosum_matrix("BLOSUM62.txt")
-    elif blosum_int == "80":
-        blosum = blosum_matrix("BLOSUM80.txt")
-    elif blosum_int == "50":
-        blosum = blosum_matrix("BLOSUM50.txt")
-    else:
-        print("I don't have that file, I am using BLOSUM62 instead")
-        blosum = blosum_matrix("BLOSUM62.txt")
+    print("What you have given me is a protein sequence \n")
+    alignment = input("So do you want to do local or global alignment?\n")
+
+    if alignment in ("local", "LOCAL", "Local"):
+
+        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
+        print("Please tell me which parameters you want to use\n")
+
+        indel = int(input("Give me the indel value: "))
+        extension = int(input("Give me the extension value: "))
+        blosum_int = input("Give me which blosum matrix you want to use (introduce the number only):")
+        print("\n")
+
+        if blosum_int == "62":
+            blosum = blosum_matrix("BLOSUM62.txt")
+        elif blosum_int == "80":
+            blosum = blosum_matrix("BLOSUM80.txt")
+        elif blosum_int == "50":
+            blosum = blosum_matrix("BLOSUM50.txt")
+        else:
+            print("I don't have that file, I am using BLOSUM62 instead\n")
+            blosum = blosum_matrix("BLOSUM62.txt")
 
     
-    matrix3 = alignment_protein_sw(seq_list[0], seq_list[1], blosum, indel, extension)
-    #print(matrix3)
-    
-    print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-    
-    (output1, output2) = traceback_ws(matrix3, seq_list[0], seq_list[1])
+        matrix = alignment_protein_nw(seq_list[0], seq_list[1], blosum, indel, extension)
 
-    for i in range(0, len(output1), 60):
-        print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
+        print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+        
+
+
+    elif alignment in ("global", "GLOBAL", "Global"):
+
+        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
+        print("Please tell me which parameters you want to use\n")
+
+        indel = int(input("Give me the indel value: "))
+        extension = int(input("Give me the extension value: "))
+        blosum_int = input("Give me which blosum matrix you want to use (introduce the number only): ")
+        print("\n")
+    
+
+        if blosum_int == "62":
+            blosum = blosum_matrix("BLOSUM62.txt")
+        elif blosum_int == "80":
+            blosum = blosum_matrix("BLOSUM80.txt")
+        elif blosum_int == "50":
+            blosum = blosum_matrix("BLOSUM50.txt")
+        else:
+            print("I don't have that file, I am using BLOSUM62 instead\n")
+            blosum = blosum_matrix("BLOSUM62.txt")
+
+    
+        matrix = alignment_protein_sw(seq_list[0], seq_list[1], blosum, indel, extension)
+
+        print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        (output1, output2) = traceback_ws(matrix, seq_list[0], seq_list[1])
+
+        for i in range(0, len(output1), 60):
+            print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
 
 
