@@ -227,16 +227,13 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 if list_values.index(max(list_values)) == 2:
                     matrix_moves[row][col] = "top"
 
-    print_matrix(matrix_moves)
-    print_matrix(matrix)
 
     align1 = ""
     align2 = ""
     middle_space = ""
     total_alignment = ""
-    #print(nrow, ncol)
-    #print(string1[ncol], string2[nrow])
-    print(nrow, ncol)
+
+
     while nrow > 0 or ncol > 0:
 
         if matrix_moves[nrow][ncol] == "diag":
@@ -248,8 +245,19 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
             align1 = string1[ncol + 1] + align1
             align2 = string2[nrow + 1] + align2
 
+            #Identity
             if string1[ncol + 1] == string2[nrow + 1]:
                 middle_space = "|" + middle_space
+
+            #blosum score greater than 0
+            elif int(blosum[string1[ncol+1]][string2[nrow+1]]) > 0:
+                middle_space = ":" + middle_space
+
+            #Blosum score 0 or negative
+            elif int(blosum[string1[ncol+1]][string2[nrow+1]]) <= 0:
+                middle_space = "." + middle_space
+
+            #Gap
             else:
                 middle_space = " " + middle_space
 
