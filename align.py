@@ -9,8 +9,8 @@ def make_matrix(string1, string2):
     matrix = []
     matrix_moves = []
     
-    string1_mod = "*" + string1
-    string2_mod = "*" + string2
+    #string1_mod = "*" + string1
+    #string2_mod = "*" + string2
     
     
     
