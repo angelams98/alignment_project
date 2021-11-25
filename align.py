@@ -165,7 +165,7 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                     matrix[row][col] = matrix[row][col-1] + exten
                 else:
                     matrix[row][col] = matrix[row][col-1] + opening
-                matrix_moves[row][col] = "gap"
+                matrix_moves[row][col] = "left"
 
             #In the first column we only calculate the values using the values from the top, so we start in row 1
             elif row != 0 and col == 0:
@@ -174,7 +174,7 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                     matrix[row][col] = matrix[row-1][col] + exten
                 else:
                     matrix[row][col] = matrix[row-1][col] + opening
-                matrix_moves[row][col] = "gap"
+                matrix_moves[row][col] = "top"
             
             #When not in the first row and column, the values can be calculated from left, top or diagonal
             elif row != 0 and col != 0:
@@ -212,9 +212,62 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 #O(o), o is the number of elements it has to check
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
-                else:
-                    matrix_moves[row][col] = "gap"
+                if list_values.index(max(list_values)) == 1:
+                    matrix_moves[row][col] = "left"
+                if list_values.index(max(list_values)) == 2:
+                    matrix_moves[row][col] = "top"
 
+    print_matrix(matrix_moves)
+    print_matrix(matrix)
+
+    align1 = ""
+    align2 = ""
+    middle_space = ""
+    total_alignment = ""
+    #print(nrow, ncol)
+    #print(string1[ncol], string2[nrow])
+    print(nrow, ncol)
+    while nrow > 0 or ncol > 0:
+
+        if matrix_moves[nrow][ncol] == "diag":
+            
+            nrow -= 1
+            ncol -= 1
+        
+            
+            align1 = string1[ncol + 1] + align1
+            align2 = string2[nrow + 1] + align2
+
+            if string1[ncol + 1] == string2[nrow + 1]:
+                middle_space = "|" + middle_space
+            else:
+                middle_space = " " + middle_space
+
+            
+        if matrix_moves[nrow][ncol] == "top":
+            
+            nrow -= 1
+            
+            align1 = "-" + align1
+            align2 = string2[nrow + 1] + align2
+            middle_space = " " + middle_space
+
+            
+
+        if matrix_moves[nrow][ncol] == "left":
+
+            ncol -= 1
+
+            align1 = string1[ncol + 1] + align1
+            align2 = "-" + align2
+            middle_space = " " + middle_space
+
+
+
+    for i in range(0, len(align1), 60):
+        total_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
+
+    print(total_alignment)
 
     return matrix
 
@@ -454,6 +507,8 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 else:
                     matrix_moves[row][col] = "gap"
 
+    print_matrix(matrix)
+    print_matrix(matrix_moves)
 
     return matrix
 
@@ -742,7 +797,7 @@ if is_protein == False:
         
         matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+        #print(traceback_nw(matrix, seq_list[0], seq_list[1]))
 
     #O(q), q is the strings we are comparing in the conditional
     elif alignment == "LOCAL":
@@ -767,6 +822,7 @@ if is_protein == False:
 
 
         matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        """
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
@@ -775,6 +831,7 @@ if is_protein == False:
         for i in range(0, len(output1), 60):
             print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
         print("The value for this alignment is", score)
+        """
         
 
 
@@ -813,7 +870,7 @@ elif is_protein == True:
         matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, indel, extension, match, mismatch)
 
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+        #print(traceback_nw(matrix, seq_list[0], seq_list[1]))
         
 
     #O(q), q is the strings we are comparing in the conditional
@@ -847,10 +904,12 @@ elif is_protein == True:
         matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        """
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
         #O(r), r is the length of the output1 sequence
         for i in range(0, len(output1), 60):
             print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
         print("The value for this alignment is", score)
+        """
 
