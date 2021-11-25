@@ -448,25 +448,13 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     """
     
     #Initialize the variables 
-    matrix = []
-    matrix_moves = []
+    matrix, matrix_moves = make_matrix(string1, string2)
 
-    ncol = len(string1) 
-    nrow = len(string2) 
-
+    ncol = len(string1)
+    nrow = len(string2)
+    
     string1 = "*" + string1
     string2 = "*" + string2
-
-    #Create an empty matrix
-    #O(m), m is the number of rows of the new matrix
-    for row in range(nrow + 1):
-        matrix.append([])
-        matrix_moves.append([])
-
-        #O(n), n isthe number of columns of the new matrix
-        for col in range(ncol + 1):
-            matrix[row].append(0)
-            matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
