@@ -205,12 +205,12 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
                 #O(o), o is the number of elements it has to check
                 matrix[row][col] = max(value_left, value_top, value_diag)
-                list_values = [value_left, value_top, value_diag]
+                list_values = [value_diag, value_left, value_top]
 
                 
                 #Check from which cell we have calculated the score to save the movement
                 #O(o), o is the number of elements it has to check
-                if list_values.index(max(list_values)) == 2:
+                if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
                 else:
                     matrix_moves[row][col] = "gap"
@@ -284,6 +284,7 @@ def traceback_nw (matrix, seq1, seq2):
     align1 = ""
     align2 = ""
     total_alignment = ""
+    middle_space = ""
 
     while row > 0 or col > 0:
     
@@ -292,27 +293,37 @@ def traceback_nw (matrix, seq1, seq2):
         top_score = matrix[row-1][col]
         values = [diag_score, left_score, top_score]
 
+        #The highest score is the diagonal
         if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
 
+            if seq1[col-1] == seq2[row-1]:
+                middle_space = "|" + middle_space
+            else:
+                middle_space = " " + middle_space
+
             row = row - 1
             col = col - 1
 
+        #The highest score is the left
         if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
+            middle_space = " " + middle_space
 
             col = col - 1
 
+        #The highest score is the top
         if values.index(max(values)) == 2:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2 
+            middle_space = " " + middle_space
 
             row = row - 1
         
     for i in range(0, len(align1), 60):
-        total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
+        total_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
 
     return total_alignment
 
@@ -369,8 +380,8 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     matrix = []
     matrix_moves = []
 
-    nrow = len(string1) 
-    ncol = len(string2) 
+    ncol = len(string1) 
+    nrow = len(string2) 
 
     string1 = "*" + string1
     string2 = "*" + string2
@@ -397,15 +408,15 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
                 if dna_prot == "dna":
                     #We compare the nucleotides in the strings
-                    if string1[row-1] == string2[col-1]:
+                    if string1[col] == string2[row]:
                         value_diag  = matrix[row-1][col-1] + match
 
-                    if string1[row-1] != string2[col-1]:
+                    if string1[col] != string2[row]:
                         value_diag  = matrix[row-1][col-1] + mismatch
 
                 elif dna_prot == "protein":
                     #We calculate the score using the blosum matrix
-                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
 
 
                 #We check if the previous value was a gap, so the value score is for gap opening or extension
@@ -433,11 +444,11 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
                     matrix[row][col] = 0
 
             
-                list_values = [value_left, value_top, value_diag]
+                list_values = [value_diag, value_left, value_top]
 
                 #We store the cell from which we have calculated the score
                 #O(o), o is the number of elements it has to check
-                if list_values.index(max(list_values)) == 2:
+                if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
 
                 else:
@@ -521,14 +532,15 @@ def traceback_sw (matrix, seq1, seq2):
     #O(p), p is the number of elements we have saved in matrix_max_position_list
     for i in range(len(matrix_max_position_list)):
 
-        row = matrix_max_position_list[i][0]-1
-        col = matrix_max_position_list[i][1]-1
+        row = matrix_max_position_list[i][0] 
+        col = matrix_max_position_list[i][1] 
 
-        align1 = seq1[col]
-        align2 = seq2[row]
+        align1 = ""
+        align2 = ""
         
         diag_score = -1
         total_alignment = ""
+        middle_space = ""
 
         #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
         while diag_score != 0:
@@ -545,6 +557,11 @@ def traceback_sw (matrix, seq1, seq2):
             if values.index(max(values)) == 0:
                 align1 = seq1[col-1] + align1
                 align2 = seq2[row-1] + align2
+
+                if seq1[col-1] == seq2[row-1]:
+                    middle_space = "|" + middle_space
+                else:
+                    middle_space = " " + middle_space
             
                 row = row - 1
                 col = col - 1
@@ -556,6 +573,7 @@ def traceback_sw (matrix, seq1, seq2):
             if values.index(max(values)) == 1:
                 align1 = seq1[col-1] + align1
                 align2 = "-" + align2
+                middle_space = " " + middle_space
         
                 col = col - 1
                 score += left_score
@@ -566,6 +584,7 @@ def traceback_sw (matrix, seq1, seq2):
             if values.index(max(values)) == 2:
                 align1 = "-" + align1
                 align2 = seq2[row-1] + align2
+                middle_space = " " + middle_space
         
                 row = row - 1
                 score += top_score
@@ -573,6 +592,7 @@ def traceback_sw (matrix, seq1, seq2):
 
         total_align1.append(align1)
         total_align2.append(align2)
+
         #O(1), it is appending elements to a list
         total_alignment_scores.append(score)
 
@@ -736,6 +756,16 @@ if is_protein == False:
         extension = int(input("Give me the extension value: "))
         print("\n")
 
+        #Smith-Waterman method doesn't accept positive values for mismatch, indel and extension
+        #These variables are turned into negative numbers
+        if mismatch > 0:
+            mismatch = int("-" + str(mismatch))
+        if indel > 0:
+            indel = int("-" + str(indel))
+        if extension > 0:
+            extension = int("-" + str(extension))
+
+
         matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
@@ -796,6 +826,11 @@ elif is_protein == True:
         extension = int(input("Give me the extension value: "))
         blosum_int = input("Give me which blosum matrix you want to use (introduce the number only): ")
         print("\n")
+
+        if indel > 0:
+            indel = int("-" + str(indel))
+        if extension > 0:
+            extension = int("-" + str(extension))
     
 
         if blosum_int == "62":
