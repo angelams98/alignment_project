@@ -300,6 +300,8 @@ def print_matrix(matrix):
 #Function for DNA samples
 #This function creates a list of lists with the matching scores
 def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
+    print(string1, string2, dna_prot, open, exten, match, mismatch)
+    print(opening, exten)
     """
         Calculates a scoring matrix for two DNA/protein sequences using the Smith-Waterman algorithm
         PSEUDOCODE:
@@ -372,7 +374,6 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
             elif dna_prot == "protein":
                 #We calculate the score using the blosum matrix
                 value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
-                print(blosum[string1[col]][string2[row]])
 
 
             #We check if the previous value was a gap, so the value score is for gap opening or extension
@@ -398,6 +399,8 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
  
         
             list_values = [value_diag, value_left, value_top, zero]
+            #print(list_values)
+            #print(value_diag)
 
             #We store the cell from which we have calculated the score
             #O(o), o is the number of elements it has to check
@@ -716,12 +719,12 @@ if is_protein == False:
 
         match = int(input("Give me the match value: "))
         mismatch = int(input("Give me the mismatch value: "))
-        indel = int(input("Give me the indel value: "))
+        opening = int(input("Give me the indel value: "))
         extension = int(input("Give me the extension value: "))
         print("\n")
 
         
-        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, opening, extension)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
@@ -733,35 +736,18 @@ if is_protein == False:
 
         match = int(input("Give me the match value: "))
         mismatch = int(input("Give me the mismatch value: "))
-        indel = int(input("Give me the indel value: "))
+        opening = int(input("Give me the indel value: "))
         extension = int(input("Give me the extension value: "))
         print("\n")
 
-        #Smith-Waterman method doesn't accept positive values for mismatch, indel and extension
-        #These variables are turned into negative numbers
-        if mismatch > 0:
-            mismatch = int("-" + str(mismatch))
-        if indel > 0:
-            indel = int("-" + str(indel))
-        if extension > 0:
-            extension = int("-" + str(extension))
 
 
-        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, opening, extension)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         print("The score of the best alignment is", score[0])
-        """
-        (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
-        print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        
-        #O(r), r is the length of the output1 sequence
-        for i in range(0, len(output1), 60):
-            print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
-        print("The value for this alignment is", score)
-        """
         
 
 
@@ -781,7 +767,7 @@ elif is_protein == True:
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
 
-        indel = int(input("Give me the indel value: "))
+        opening = int(input("Give me the indel value: "))
         extension = int(input("Give me the extension value: "))
         blosum_int = input("Give me which blosum matrix you want to use (introduce the number only):")
         print("\n")
@@ -797,7 +783,7 @@ elif is_protein == True:
             blosum = blosum_matrix("BLOSUM62.txt")
 
         
-        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, indel, extension, match, mismatch)
+        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, opening, extension, match, mismatch)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         
@@ -808,16 +794,11 @@ elif is_protein == True:
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
         print("Please tell me which parameters you want to use\n")
 
-        indel = int(input("Give me the indel value: "))
+        opening = int(input("Give me the indel value: "))
         extension = int(input("Give me the extension value: "))
         blosum_int = input("Give me which blosum matrix you want to use (introduce the number only): ")
         print("\n")
 
-        if indel > 0:
-            indel = int("-" + str(indel))
-        if extension > 0:
-            extension = int("-" + str(extension))
-    
 
         if blosum_int == "62":
             blosum = blosum_matrix("BLOSUM62.txt")
@@ -830,17 +811,8 @@ elif is_protein == True:
             blosum = blosum_matrix("BLOSUM62.txt")
 
     
-        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, opening, extension, match, mismatch)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         print("The score of the best alignment is", score[0])
-        """
-        (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
-
-        #O(r), r is the length of the output1 sequence
-        for i in range(0, len(output1), 60):
-            print(output1[i:i+60] +"\n" + output2[i:i+60] +"\n" +"\n")
-        print("The value for this alignment is", score)
-        """
-
