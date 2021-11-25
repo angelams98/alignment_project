@@ -17,12 +17,12 @@ def make_matrix(string1, string2):
     #print(len(string1), len(string2))
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
-    for row in range(len(string2_mod)+1):
+    for row in range(len(string2_mod)):
         matrix.append([])
         matrix_moves.append([])
     
         #O(n), n is the number of columns in the new matrix
-        for col in range(len(string1_mod)+1):
+        for col in range(len(string1_mod)):
             matrix[row].append(0)
             matrix_moves[row].append('diag')
     
