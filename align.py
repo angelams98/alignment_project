@@ -134,28 +134,31 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
     matrix = []
     matrix_moves = []
 
-    nrow = len(string1) + 1
-    ncol = len(string2) + 1
+    ncol = len(string1)
+    nrow = len(string2) 
+
+    string1 = "*" + string1
+    string2 = "*" + string2
 
 
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
-    for row in range(nrow):
+    for row in range(nrow + 1):
         matrix.append([])
         matrix_moves.append([])
 
         #O(n), n is the number of columns in the new matrix
-        for col in range(ncol):
+        for col in range(ncol + 1):
             matrix[row].append(0)
             matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
     #O(m), m is the number of rows in the matrix
-    for row in range(nrow):
+    for row in range(nrow + 1):
 
         #O(n), n is the number of columns in the matrix
-        for col in range(ncol):
+        for col in range(ncol + 1):
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
                 if matrix_moves[row][col-1] != "diag":
@@ -177,14 +180,14 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
             elif row != 0 and col != 0:
                 if dna_prot == "dna":
                     #We compare the nucleotides in the strings
-                    if string1[row-1] == string2[col-1]:
+                    if string1[col] == string2[row]:
                         value_diag  = matrix[row-1][col-1] + match
 
-                    if string1[row-1] != string2[col-1]:
+                    if string1[col] != string2[row]:
                         value_diag  = matrix[row-1][col-1] + mismatch
 
                 elif dna_prot == "protein":
-                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
 
                 if matrix_moves[row][col-1] != "diag":
                     value_left = matrix[row][col-1] + exten
@@ -201,20 +204,19 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
                 #O(o), o is the number of elements it has to check
-                matrix[row][col] = max(value_diag, value_left, value_top)
+                matrix[row][col] = max(value_left, value_top, value_diag)
                 list_values = [value_left, value_top, value_diag]
 
                 
                 #Check from which cell we have calculated the score to save the movement
                 #O(o), o is the number of elements it has to check
-                if list_values.index(max(list_values)) == 0:
+                if list_values.index(max(list_values)) == 2:
                     matrix_moves[row][col] = "diag"
                 else:
                     matrix_moves[row][col] = "gap"
 
-    #O(m*n), n is the number of rows in the matrix, n is the number of columns in the matrix
-    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t
+
+    return matrix
 
 
 
@@ -276,11 +278,11 @@ def traceback_nw (matrix, seq1, seq2):
     """
 
     #Initialize variables
-    row = len(matrix) - 2
-    col = len(matrix[0]) - 2
-    score = matrix[row][col]
-    align1 = seq1[col]
-    align2 = seq2[row]
+    row = len(seq2) 
+    col = len(seq1) 
+    
+    align1 = ""
+    align2 = ""
     total_alignment = ""
 
     while row > 0 or col > 0:
@@ -293,21 +295,21 @@ def traceback_nw (matrix, seq1, seq2):
         if values.index(max(values)) == 0:
             align1 = seq1[col-1] + align1
             align2 = seq2[row-1] + align2
+
             row = row - 1
             col = col - 1
-            score += diag_score
 
         if values.index(max(values)) == 1:
             align1 = seq1[col-1] + align1
             align2 = "-" + align2
+
             col = col - 1
-            score += left_score
 
         if values.index(max(values)) == 2:
             align1 = "-" + align1
             align2 = seq2[row-1] + align2 
+
             row = row - 1
-            score += top_score
         
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + align2[i:i+60] + "\n" + "\n"
@@ -700,8 +702,7 @@ if is_protein == False:
 
     print("What you have given me is a DNA sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
-    alignment.upper()
-    print(alignment)
+    alignment = alignment.upper()
     dna_prot = "dna"
     blosum = 0
 
@@ -752,7 +753,6 @@ elif is_protein == True:
     print("What you have given me is a protein sequence \n")
     alignment = input("So do you want to do local or global alignment?\n")
     alignment = alignment.upper()
-    print(alignment)
     dna_prot = "protein"
     match = 0 
     mismatch = 0
