@@ -8,19 +8,16 @@ def make_matrix(string1, string2, filler):
     #Initialize the variables 
     matrix = []
     
-    string1_mod = "*" + string1
-    string2_mod = "*" + string2
-    
     
     
     #print(len(string1), len(string2))
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
-    for row in range(len(string2_mod)+1):
+    for row in range(len(string2)+1):
         matrix.append([])
     
         #O(n), n is the number of columns in the new matrix
-        for col in range(len(string1_mod)+1):
+        for col in range(len(string1)+1):
             matrix[row].append(filler)
 
     return matrix
@@ -230,6 +227,7 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 if list_values.index(max(list_values)) == 2:
                     matrix_moves[row][col] = "top"
 
+    print_matrix(matrix)
 
     while nrow > 0 or ncol > 0:
 
@@ -349,7 +347,7 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     
     #Initialize the variables 
     matrix = make_matrix(string1, string2, 0)
-
+    matrix_moves = make_matrix(string1, string2, "diag")
     ncol = len(string1)
     nrow = len(string2)
     
@@ -394,30 +392,26 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
                 #The correct value is going to be the maximum from the 3 we have calculated above  
                 #O(o), o is the number of elements it has to check
-                if max(value_diag, value_left, value_top) >= 0:
-                    matrix[row][col] = max(value_diag, value_left, value_top)
 
-                #O(o), o is the number of elements it has to check
-                if max(value_diag, value_left, value_top) < 0:
-                    #In Smith-Waterman, the minimum value is always 0    
-                    matrix[row][col] = 0
+                matrix[row][col] = max(value_diag, value_left, value_top, 0)
+
 
             
-                list_values = [value_diag, value_left, value_top]
+                list_values = [value_diag, value_left, value_top, 0]
 
                 #We store the cell from which we have calculated the score
                 #O(o), o is the number of elements it has to check
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
 
-                if list_values.index(max(list_values)) == 1:
-                    matrix_moves[row][col] = "left"
+                if list_values.index(max(list_values)) == 3:
+                    matrix_moves[row][col] = "zero"
 
-                if list_values.index(max(list_values)) == 2:
-                    matrix_moves[row][col] = "top"
+                else:
+                    matrix_moves[row][col] = "gap"
 
-    #print_matrix(matrix_moves)
-    #print_matrix(matrix)
+    print_matrix(matrix_moves)
+    print_matrix(matrix)
 
     #Initialize the variables
     matrix_max_value = -1
