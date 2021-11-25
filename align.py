@@ -357,58 +357,58 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
     #Fill out the matrix
     #O(m), m is the number of rows of the matrix
-    for row in range(nrow + 1):
+    for row in range(1, nrow + 1):
         #O(n), n is the number of rows of the matrix
-        for col in range(ncol + 1):
+        for col in range(1, ncol + 1):
 
-            if row != 0 and col != 0:
+            if dna_prot == "dna":
+                #We compare the nucleotides in the strings
+                if string1[col] == string2[row]:
+                    value_diag  = matrix[row-1][col-1] + match
 
-                if dna_prot == "dna":
-                    #We compare the nucleotides in the strings
-                    if string1[col] == string2[row]:
-                        value_diag  = matrix[row-1][col-1] + match
+                if string1[col] != string2[row]:
+                    value_diag  = matrix[row-1][col-1] + mismatch
 
-                    if string1[col] != string2[row]:
-                        value_diag  = matrix[row-1][col-1] + mismatch
-
-                elif dna_prot == "protein":
-                    #We calculate the score using the blosum matrix
-                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
-
-
-                #We check if the previous value was a gap, so the value score is for gap opening or extension
-                if matrix_moves[row][col-1] != "diag":
-                    value_left = matrix[row][col-1] + exten
-
-                if matrix_moves[row-1][col] != "diag":
-                    value_top = matrix[row-1][col] + exten
-
-                if matrix_moves[row][col-1] == "diag":
-                    value_left = matrix[row][col-1] + opening
-
-                if matrix_moves[row-1][col] == "diag":
-                    value_top = matrix[row-1][col] + opening
+            elif dna_prot == "protein":
+                #We calculate the score using the blosum matrix
+                value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+                print(blosum[string1[col]][string2[row]])
 
 
-                #The correct value is going to be the maximum from the 3 we have calculated above  
-                #O(o), o is the number of elements it has to check
+            #We check if the previous value was a gap, so the value score is for gap opening or extension
+            if matrix_moves[row][col-1] == "gap":
+                value_left = matrix[row][col-1] + exten
 
-                matrix[row][col] = max(value_diag, value_left, value_top, 0)
+            if matrix_moves[row-1][col] == "gap":
+                value_top = matrix[row-1][col] + exten
+
+            if matrix_moves[row][col-1] != "gap":
+                value_left = matrix[row][col-1] + opening
+
+            if matrix_moves[row-1][col] != "gap":
+                value_top = matrix[row-1][col] + opening
 
 
-            
-                list_values = [value_diag, value_left, value_top, 0]
+            #The correct value is going to be the maximum from the 3 we have calculated above  
+            #O(o), o is the number of elements it has to check
 
-                #We store the cell from which we have calculated the score
-                #O(o), o is the number of elements it has to check
-                if list_values.index(max(list_values)) == 0:
-                    matrix_moves[row][col] = "diag"
+            zero = 0
 
-                if list_values.index(max(list_values)) == 3:
-                    matrix_moves[row][col] = "zero"
+            matrix[row][col] = max(value_diag, value_left, value_top, zero)
+ 
+        
+            list_values = [value_diag, value_left, value_top, zero]
 
-                else:
-                    matrix_moves[row][col] = "gap"
+            #We store the cell from which we have calculated the score
+            #O(o), o is the number of elements it has to check
+            if list_values.index(max(list_values)) == 0:
+                matrix_moves[row][col] = "diag"
+
+            if list_values.index(max(list_values)) == 3:
+                matrix_moves[row][col] = "zero"
+
+            else:
+                matrix_moves[row][col] = "gap"
 
     print_matrix(matrix_moves)
     print_matrix(matrix)
