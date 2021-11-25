@@ -4,29 +4,26 @@
 import sys
 import re
 
-def make_matrix(string1, string2):
+def make_matrix(string1, string2, filler):
     #Initialize the variables 
     matrix = []
-    matrix_moves = []
     
-    #string1_mod = "*" + string1
-    #string2_mod = "*" + string2
-    
+    string1_mod = "*" + string1
+    string2_mod = "*" + string2
     
     
-    #print(len(string1), len(string2)+1)
+    
+    #print(len(string1), len(string2))
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
-    for row in range(len(string2)+1):
+    for row in range(len(string2_mod)+1):
         matrix.append([])
-        matrix_moves.append([])
     
         #O(n), n is the number of columns in the new matrix
-        for col in range(len(string1)+1):
-            matrix[row].append(0)
-            matrix_moves[row].append('diag')
-    
-    return matrix, matrix_moves
+        for col in range(len(string1_mod)+1):
+            matrix[row].append(filler)
+
+    return matrix
 
 #Function for creating the BLOSUM matrix (dicts of dicts) from a file  
 def blosum_matrix(file):
@@ -154,7 +151,8 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
     """
 
     #Initialize the variables 
-    matrix, matrix_moves = make_matrix(string1, string2)
+    matrix = make_matrix(string1, string2, 0)
+    matrix_moves = make_matrix(string1, string2, 'diag')
 
     ncol = len(string1)
     nrow = len(string2)
