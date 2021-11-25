@@ -369,81 +369,82 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     matrix = []
     matrix_moves = []
 
-    nrow = len(string1) + 1
-    ncol = len(string2) + 1
+    nrow = len(string1) 
+    ncol = len(string2) 
 
+    string1 = "*" + string1
+    string2 = "*" + string2
 
     #Create an empty matrix
     #O(m), m is the number of rows of the new matrix
-    for row in range(nrow):
+    for row in range(nrow + 1):
         matrix.append([])
         matrix_moves.append([])
 
         #O(n), n isthe number of columns of the new matrix
-        for col in range(ncol):
+        for col in range(ncol + 1):
             matrix[row].append(0)
             matrix_moves[row].append('diag')
 
 
     #Fill out the matrix
     #O(m), m is the number of rows of the matrix
-    for row in range(1, nrow):
+    for row in range(nrow + 1):
         #O(n), n is the number of rows of the matrix
-        for col in range(1, ncol):
+        for col in range(ncol + 1):
 
-            #We check if the previous value was a gap, so the value score is for gap opening or extension
-            if matrix_moves[row][col-1] != "diag":
-                value_left = matrix[row][col-1] + exten
+            if row != 0 and col != 0:
 
-            if matrix_moves[row-1][col] != "diag":
-                value_top = matrix[row-1][col] + exten
+                if dna_prot == "dna":
+                    #We compare the nucleotides in the strings
+                    if string1[row-1] == string2[col-1]:
+                        value_diag  = matrix[row-1][col-1] + match
 
-            if matrix_moves[row][col-1] == "diag":
-                value_left = matrix[row][col-1] + opening
+                    if string1[row-1] != string2[col-1]:
+                        value_diag  = matrix[row-1][col-1] + mismatch
 
-            if matrix_moves[row-1][col] == "diag":
-                value_top = matrix[row-1][col] + opening
-        
-
-            if dna_prot == "dna":
-                #We compare the nucleotides in the strings
-                if string1[row-1] == string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + match
-
-                if string1[row-1] != string2[col-1]:
-                    value_diag  = matrix[row-1][col-1] + mismatch
-
-            elif dna_prot == "protein":
-                #We calculate the score using the blosum matrix
-                value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
+                elif dna_prot == "protein":
+                    #We calculate the score using the blosum matrix
+                    value_diag  = matrix[row-1][col-1] + int(blosum[string1[row-1]][string2[col-1]])
 
 
+                #We check if the previous value was a gap, so the value score is for gap opening or extension
+                if matrix_moves[row][col-1] != "diag":
+                    value_left = matrix[row][col-1] + exten
 
-            #The correct value is going to be the maximum from the 3 we have calculated above  
-            #O(o), o is the number of elements it has to check
-            if max(value_diag, value_left, value_top) >= 0:
-                matrix[row][col] = max(value_diag, value_left, value_top)
+                if matrix_moves[row-1][col] != "diag":
+                    value_top = matrix[row-1][col] + exten
 
-            #O(o), o is the number of elements it has to check
-            if max(value_diag, value_left, value_top) < 0:
-                #In Smith-Waterman, the minimum value is always 0    
-                matrix[row][col] = 0
+                if matrix_moves[row][col-1] == "diag":
+                    value_left = matrix[row][col-1] + opening
 
-        
-            list_values = [value_left, value_top, value_diag]
-
-            #We store the cell from which we have calculated the score
-            #O(o), o is the number of elements it has to check
-            if list_values.index(max(list_values)) == 0:
-                matrix_moves[row][col] = "diag"
-
-            else:
-                matrix_moves[row][col] = "gap"
+                if matrix_moves[row-1][col] == "diag":
+                    value_top = matrix[row-1][col] + opening
 
 
-    #O(m*n), m is the number of rows and n is the number of columns of the matrix
-    matrix_t = [[matrix[col][row] for col in range(len(matrix))] for row in range(len(matrix[0]))]
-    return matrix_t
+                #The correct value is going to be the maximum from the 3 we have calculated above  
+                #O(o), o is the number of elements it has to check
+                if max(value_diag, value_left, value_top) >= 0:
+                    matrix[row][col] = max(value_diag, value_left, value_top)
+
+                #O(o), o is the number of elements it has to check
+                if max(value_diag, value_left, value_top) < 0:
+                    #In Smith-Waterman, the minimum value is always 0    
+                    matrix[row][col] = 0
+
+            
+                list_values = [value_left, value_top, value_diag]
+
+                #We store the cell from which we have calculated the score
+                #O(o), o is the number of elements it has to check
+                if list_values.index(max(list_values)) == 2:
+                    matrix_moves[row][col] = "diag"
+
+                else:
+                    matrix_moves[row][col] = "gap"
+
+
+    return matrix
 
 
 def traceback_sw (matrix, seq1, seq2):
