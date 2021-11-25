@@ -348,7 +348,7 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
     """
     
     #Initialize the variables 
-    matrix, matrix_moves = make_matrix(string1, string2)
+    matrix = make_matrix(string1, string2, 0)
 
     ncol = len(string1)
     nrow = len(string2)
