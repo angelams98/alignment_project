@@ -17,7 +17,7 @@ def make_matrix(string1, string2):
     #print(len(string1), len(string2)+1)
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
-    for row in range(len(string2)):
+    for row in range(len(string2)+1):
         matrix.append([])
         matrix_moves.append([])
     
