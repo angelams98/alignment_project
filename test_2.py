@@ -227,3 +227,55 @@ blosum = blosum_matrix("BLOSUM62.txt")
 result = alignment_nw(str1, str2, "protein", 0, 0, -10, -1)
 
 print_matrix(result)
+
+
+        """
+        #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
+        while diag_score != 0:
+
+            score = matrix[row][col]
+            diag_score = matrix[row-1][col-1]
+                                
+            #Check if the diagonal score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
+            if matrix_moves[row][col] == "diag":
+
+                row -= 1
+                col -= 1
+
+                align1 = string1[col + 1] + align1
+                align2 = string2[row + 1] + align2
+
+                #Identity
+                if string1[col + 1] == string2[row + 1]:
+                    middle_space = "|" + middle_space
+                
+                #Blosum score greater than 0
+                elif int(blosum[string1[col+1]][string2[row+1]]) > 0:
+                    middle_space = ":" + middle_space
+
+                #Blosum score 0 or less than 0
+                elif int(blosum[string1[col + 1]][string2[row + 1]]) <= 0:
+                    middle_space = "." + middle_space
+                
+                #Gaps
+                else:
+                    middle_space = " " + middle_space
+                
+
+            #Check if the left score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
+            if matrix_moves[row][col] == "top":
+                row -= 1
+                align1 = "-" + align1
+                align2 = string2[row + 1] + align2
+                middle_space = " " + middle_space
+
+            if matrix_moves[row][col] == "left":
+                col -= 1
+                align1 = string1[col + 1] + align1
+                align2 = "-" + align2
+                middle_space = " " + middle_space
+
+            
+        """

@@ -162,6 +162,11 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
     string1 = "*" + string1
     string2 = "*" + string2
 
+    align1 = ""
+    align2 = ""
+    middle_space = ""
+    total_alignment = ""
+
 
     #Fill out the matrix
     #O(m), m is the number of rows in the matrix
@@ -228,20 +233,12 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                     matrix_moves[row][col] = "top"
 
 
-    align1 = ""
-    align2 = ""
-    middle_space = ""
-    total_alignment = ""
-
-
     while nrow > 0 or ncol > 0:
 
         if matrix_moves[nrow][ncol] == "diag":
-            
             nrow -= 1
             ncol -= 1
         
-            
             align1 = string1[ncol + 1] + align1
             align2 = string2[nrow + 1] + align2
 
@@ -250,11 +247,11 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 middle_space = "|" + middle_space
 
             #blosum score greater than 0
-            elif int(blosum[string1[ncol+1]][string2[nrow+1]]) > 0:
+            elif int(blosum[string1[ncol + 1]][string2[nrow + 1]]) > 0:
                 middle_space = ":" + middle_space
 
             #Blosum score 0 or negative
-            elif int(blosum[string1[ncol+1]][string2[nrow+1]]) <= 0:
+            elif int(blosum[string1[ncol + 1]][string2[nrow+1]]) <= 0:
                 middle_space = "." + middle_space
 
             #Gap
@@ -263,17 +260,14 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
 
             
         if matrix_moves[nrow][ncol] == "top":
-            
             nrow -= 1
             
             align1 = "-" + align1
             align2 = string2[nrow + 1] + align2
             middle_space = " " + middle_space
 
-            
 
         if matrix_moves[nrow][ncol] == "left":
-
             ncol -= 1
 
             align1 = string1[ncol + 1] + align1
@@ -285,9 +279,7 @@ def alignment_nw(string1, string2, dna_prot, opening, exten, match, mismatch):
     for i in range(0, len(align1), 60):
         total_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
 
-    print(total_alignment)
-
-    return matrix
+    return matrix, total_alignment
 
 
 
@@ -307,96 +299,6 @@ def print_matrix(matrix):
         print("\t".join(printlist))
     print("\n")  
 
-
-
-
-#This function calculates the best alignment using the matching scores from the matrix
-def traceback_nw (matrix, seq1, seq2):
-    """
-        Perform a traceback through a scoring matrix using the Needleman-Wunsch algorithm to find the best global alignment
-        PSEUDOCODE:
-            
-            Initialize row and col to the last cell of the matrix to start looping bottom to top
-            
-            While row > 0 or col > 0:
-                Look at scores in cells to the left, above and diagonal
-                
-                if diagonal score is highest:
-                    append letter from seq1 to align1
-                    append letter from seq2 to align2
-                    row = row-1
-                    col = col-1
-                
-                if left score is highest:
-                    append letter from seq1 to align1
-                    introduce gap "-" to align2
-                    col = col-1
-                    
-                if above score is highest:
-                    introduce gap "-" to align1
-                    append letter from seq2 to align2
-                    row = row-1
-                
-            for i in range(length of alignment):
-                save alignments as a string, 60 characters at a time separated by \n
-                
-        
-        :matrix: A list of lists containing a scoring matrix
-        :seq1: The first of the sequences to be aligned
-        :seq2: The second of the sequences to be aligned
-    
-        :return: \n-formatted string with total alignment
-    """
-
-    #Initialize variables
-    row = len(seq2) 
-    col = len(seq1) 
-    
-    align1 = ""
-    align2 = ""
-    total_alignment = ""
-    middle_space = ""
-
-    while row > 0 or col > 0:
-    
-        diag_score = matrix[row-1][col-1]
-        left_score = matrix[row][col-1]
-        top_score = matrix[row-1][col]
-        values = [diag_score, left_score, top_score]
-
-        #The highest score is the diagonal
-        if values.index(max(values)) == 0:
-            align1 = seq1[col-1] + align1
-            align2 = seq2[row-1] + align2
-
-            if seq1[col-1] == seq2[row-1]:
-                middle_space = "|" + middle_space
-            else:
-                middle_space = " " + middle_space
-
-            row = row - 1
-            col = col - 1
-
-        #The highest score is the left
-        if values.index(max(values)) == 1:
-            align1 = seq1[col-1] + align1
-            align2 = "-" + align2
-            middle_space = " " + middle_space
-
-            col = col - 1
-
-        #The highest score is the top
-        if values.index(max(values)) == 2:
-            align1 = "-" + align1
-            align2 = seq2[row-1] + align2 
-            middle_space = " " + middle_space
-
-            row = row - 1
-        
-    for i in range(0, len(align1), 60):
-        total_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
-
-    return total_alignment
 
 
 #Function for DNA samples
@@ -510,13 +412,140 @@ def alignment_sw(string1, string2, dna_prot, opening, exten, match, mismatch):
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
 
+                if list_values.index(max(list_values)) == 1:
+                    matrix_moves[row][col] = "left"
+
+                if list_values.index(max(list_values)) == 2:
+                    matrix_moves[row][col] = "top"
+
+    #print_matrix(matrix_moves)
+    #print_matrix(matrix)
+
+    #Initialize the variables
+    matrix_max_value = -1
+    matrix_max_position_list = []
+    total_align1 = []
+    total_align2 = []
+    total_alignment_scores = []
+    final_alignment = ""
+    
+
+    #O(m), m is the number of rows in the matrix
+    for row in range(len(matrix)):
+        #O(n), n is the number of columns in the matrix
+        for col in range(len(matrix[row])):
+
+            #If we find the same value we already have, we save it to do the alignment for that position
+            if matrix[row][col] == matrix_max_value:
+
+                #O(1), it is appending elements into a list
+                matrix_max_position_list.append([row, col])
+
+            #If we find a higher value, we save the value and the position
+            if matrix[row][col] > matrix_max_value:
+                matrix_max_value = matrix[row][col]
+                matrix_max_position_list = []
+
+                #O(1), it is appending elements to a list
+                matrix_max_position_list.append([row, col])
+            
+    
+    #We do the alignments for all the maximum values we have saved
+    #O(p), p is the number of elements we have saved in matrix_max_position_list
+    for i in range(len(matrix_max_position_list)):
+
+        row = matrix_max_position_list[i][0] 
+        col = matrix_max_position_list[i][1] 
+
+        align1 = ""
+        align2 = ""
+        
+        diag_score = -1
+        total_alignment = ""
+        middle_space = ""
+
+
+                #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
+        while diag_score != 0:
+
+            score = matrix[row][col]
+            diag_score = matrix[row-1][col-1]
+            left_score = matrix[row][col-1]
+            top_score = matrix[row-1][col]
+            values = [diag_score, left_score, top_score]
+
+            #print(align1)
+            #print(align2)
+                
+                    
+            #Check if the diagonal score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
+            if values.index(max(values)) == 0:
+                row = row - 1
+                col = col - 1
+                score += diag_score
+
+                align1 = string1[col + 1] + align1
+                align2 = string2[row + 1] + align2
+
+                
+
+                if string1[col + 1] == string2[row + 1]:
+                    middle_space = "|" + middle_space
+
+                #blosum score greater than 0
+                elif int(blosum[string1[col+1]][string2[row+1]]) > 0:
+                    middle_space = ":" + middle_space
+
+                #Blosum score 0 or negative
+                elif int(blosum[string1[col+1]][string2[row+1]]) <= 0:
+                    middle_space = "." + middle_space
+
+                #Gap
                 else:
-                    matrix_moves[row][col] = "gap"
+                    middle_space = " " + middle_space
+            
+                
 
-    print_matrix(matrix)
-    print_matrix(matrix_moves)
+            #Check if the left score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
+            if values.index(max(values)) == 1:
+                col = col - 1
+                score += left_score
 
-    return matrix
+                align1 = string1[col + 1] + align1
+                align2 = "-" + align2
+                middle_space = " " + middle_space
+        
+
+            #Check if the top score is the highest
+            #O(r), r is the number of elements we are comparing, only 3
+            if values.index(max(values)) == 2:
+                row = row - 1
+                score += top_score
+
+                align1 = "-" + align1
+                align2 = string2[row] + align2
+                middle_space = " " + middle_space
+
+
+        total_align1.append(align1)
+        total_align2.append(align2)
+        
+
+        #O(1), it is appending elements to a list
+        total_alignment_scores.append(score)
+
+        #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
+        final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
+        final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
+    #print(final_align1, final_align2)
+
+    for i in range(0, len(final_align1), 60):
+        final_alignment += final_align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  
+
+    return matrix, final_alignment, total_alignment_scores
+
 
 
 def traceback_sw (matrix, seq1, seq2):
@@ -561,108 +590,7 @@ def traceback_sw (matrix, seq1, seq2):
         :return: a tuple containing the aligned sequences
     """
     
-    #Initialize the variables
-    matrix_max_value = -1
-    matrix_max_position_list = []
-    total_align1 = []
-    total_align2 = []
-    total_alignment_scores = []
     
-
-    #O(m), m is the number of rows in the matrix
-    for row in range(len(matrix)):
-        #O(n), n is the number of columns in the matrix
-        for col in range(len(matrix[row])):
-
-            #If we find the same value we already have, we save it to do the alignment for that position
-            if matrix[row][col] == matrix_max_value:
-
-                #O(1), it is appending elements into a list
-                matrix_max_position_list.append([row, col])
-
-            #If we find a higher value, we save the value and the position
-            if matrix[row][col] > matrix_max_value:
-                matrix_max_value = matrix[row][col]
-                matrix_max_position_list = []
-
-                #O(1), it is appending elements to a list
-                matrix_max_position_list.append([row, col])
-            
-    
-    #We do the alignments for all the maximum values we have saved
-    #O(p), p is the number of elements we have saved in matrix_max_position_list
-    for i in range(len(matrix_max_position_list)):
-
-        row = matrix_max_position_list[i][0] 
-        col = matrix_max_position_list[i][1] 
-
-        align1 = ""
-        align2 = ""
-        
-        diag_score = -1
-        total_alignment = ""
-        middle_space = ""
-
-        #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
-        while diag_score != 0:
-
-            score = matrix[row][col]
-            diag_score = matrix[row-1][col-1]
-            left_score = matrix[row][col-1]
-            top_score = matrix[row-1][col]
-            values = [diag_score, left_score, top_score]
-                
-                    
-            #Check if the diagonal score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
-            if values.index(max(values)) == 0:
-                align1 = seq1[col-1] + align1
-                align2 = seq2[row-1] + align2
-
-                if seq1[col-1] == seq2[row-1]:
-                    middle_space = "|" + middle_space
-                else:
-                    middle_space = " " + middle_space
-            
-                row = row - 1
-                col = col - 1
-                score += diag_score
-                
-
-            #Check if the left score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
-            if values.index(max(values)) == 1:
-                align1 = seq1[col-1] + align1
-                align2 = "-" + align2
-                middle_space = " " + middle_space
-        
-                col = col - 1
-                score += left_score
-            
-
-            #Check if the top score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
-            if values.index(max(values)) == 2:
-                align1 = "-" + align1
-                align2 = seq2[row-1] + align2
-                middle_space = " " + middle_space
-        
-                row = row - 1
-                score += top_score
-            
-
-        total_align1.append(align1)
-        total_align2.append(align2)
-
-        #O(1), it is appending elements to a list
-        total_alignment_scores.append(score)
-
-        #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
-        final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
-        final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
-
-
-    return final_align1, final_align2, total_alignment_scores
 
 
 
@@ -801,9 +729,9 @@ if is_protein == False:
         print("\n")
 
         
-        matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        #print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+        print(alignment)
 
     #O(q), q is the strings we are comparing in the conditional
     elif alignment == "LOCAL":
@@ -827,7 +755,11 @@ if is_protein == False:
             extension = int("-" + str(extension))
 
 
-        matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+
+        print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print(alignment)
+        print("The score of the best alignment is", score[0])
         """
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
@@ -873,10 +805,9 @@ elif is_protein == True:
             blosum = blosum_matrix("BLOSUM62.txt")
 
         
-        matrix = alignment_nw(seq_list[0], seq_list[1], dna_prot, indel, extension, match, mismatch)
-
+        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], dna_prot, indel, extension, match, mismatch)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        #print(traceback_nw(matrix, seq_list[0], seq_list[1]))
+        print(alignment)
         
 
     #O(q), q is the strings we are comparing in the conditional
@@ -907,9 +838,11 @@ elif is_protein == True:
             blosum = blosum_matrix("BLOSUM62.txt")
 
     
-        matrix = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
+        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], dna_prot, match, mismatch, indel, extension)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print(alignment)
+        print("The score of the best alignment is", score[0])
         """
         (output1, output2, score) = traceback_sw(matrix, seq_list[0], seq_list[1])
 
