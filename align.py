@@ -14,7 +14,7 @@ def make_matrix(string1, string2):
     
     
     
-    #print(len(string1), len(string2))
+    #print(len(string1), len(string2)+1)
     #Create an empty matrix
     #O(m), m is the number of rows in the new matrix
     for row in range(len(string2)):
@@ -22,7 +22,7 @@ def make_matrix(string1, string2):
         matrix_moves.append([])
     
         #O(n), n is the number of columns in the new matrix
-        for col in range(len(string1)):
+        for col in range(len(string1)+1):
             matrix[row].append(0)
             matrix_moves[row].append('diag')
     
