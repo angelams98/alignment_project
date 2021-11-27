@@ -4,9 +4,21 @@ import re
 import sys
 
 
-#PSEUDOCODE
-
+#Initialize the variables
+seq_list = []
+title = []
+sequences = ""
+nucleotides = ["A", "T", "G", "C"]
+amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
+                "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
+amino_acids_checker = ["D", "E", "F", "H", "I", "K", "L", "M", "N", 
+                        "P", "Q", "R", "S", "V", "W", "Y"]
+blosum_files = ["30", "35", "40", "45", "50", "55", "62", "65", "70", 
+                "75", "80", "85", "90", "100"]
+is_protein = False
+pos = 0
 accepted_filetypes = ['.fsa', '.fasta', '.fna']
+
 
 #Read the file
 if len(sys.argv) == 2:
@@ -33,20 +45,6 @@ else:
     print('The given file was not a fasta-file.')
     sys.exit(1)
 
-
-#Initialize the variables
-seq_list = []
-title = []
-sequences = ""
-nucleotides = ["A", "T", "G", "C"]
-amino_acids = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", 
-                "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
-amino_acids_checker = ["D", "E", "F", "H", "I", "K", "L", "M", "N", 
-                        "P", "Q", "R", "S", "V", "W", "Y"]
-blosum_files = ["30", "35", "40", "45", "50", "55", "62", "65", "70", 
-                "75", "80", "85", "90", "100"]
-is_protein = False
-pos = 0
 
 
 #Saves the header lines and the sequences in lists
@@ -111,7 +109,7 @@ if is_protein == False:
     print("\n")
 
 
-    #O(r), r is the strings we are comparing in the conditional
+
     if alignment == "GLOBAL":
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
@@ -121,7 +119,7 @@ if is_protein == False:
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
-    #O(q), q is the strings we are comparing in the conditional
+
     elif alignment == "LOCAL":
 
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
