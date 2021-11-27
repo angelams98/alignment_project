@@ -5,6 +5,33 @@ import re
 
 
 
+def input_type_limiter(string, input_type):
+    """
+        A function which limits what type of input a user is allowed to input
+        
+        PSEUDOCODE:
+            While loop until user inputs something which can be returned
+                try:
+                    Return what the user input as the required data type
+                except:
+                    If the user input cannot be converted to the required data type, print error and keep looping
+                    
+        :string: Message to be provided with user-input request
+        :input_type: The datatype required
+        
+        :return: User-input as the required data type
+    """
+    
+    type_dict = {float: "number", int: "number", str: "text string"}
+    
+    while True:
+        try:
+            return input_type(input(string))
+        except:
+            print("The given input could not be returned as a", type_dict[input_type] + ".", " Please try again.")
+            pass
+
+
 def make_matrix(string1, string2, filler):
     """
         Creates a list of lists matrix with dimensions n*m, where n the length of
@@ -173,7 +200,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+blosum_number+".txt"))
+        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
 
     # Create matrix of scores and matrix of moves
     #O(m), m is the number of rows in the matrix
@@ -253,23 +280,30 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             align2 = string2[nrow + 1] + align2
         
         # Lines below creates a middle line that shows the similarity of positions in the output
-            # Check whether sequences are the same in this position
-            if string1[ncol + 1] == string2[nrow + 1]:
-                middle_space = "|" + middle_space
-
-            # If sequences are not the same in this position, check the score to determine how great the similarity is
-            # If score above 0 = high similarity
-            elif int(blosum[string1[ncol + 1]][string2[nrow + 1]]) > 0:
-                middle_space = ":" + middle_space
-
-            # If score is below 0 = low similarity
-            elif int(blosum[string1[ncol + 1]][string2[nrow+1]]) <= 0:
-                middle_space = "." + middle_space
-
-            # If there is a gap
-            else:
-                middle_space = " " + middle_space
-
+            if dna_prot == "protein":
+                # Check whether sequences are the same in this position
+                if string1[ncol + 1] == string2[nrow + 1]:
+                    middle_space = "|" + middle_space
+    
+                # If sequences are not the same in this position, check the score to determine how great the similarity is
+                # If score above 0 = high similarity
+                elif int(blosum[string1[ncol + 1]][string2[nrow + 1]]) > 0:
+                    middle_space = ":" + middle_space
+    
+                # If score is below 0 = low similarity
+                elif int(blosum[string1[ncol + 1]][string2[nrow+1]]) <= 0:
+                    middle_space = "." + middle_space
+    
+                # If there is a gap
+                else:
+                    middle_space = " " + middle_space
+                    
+            if dna_prot == "dna":
+                if string1[ncol + 1] == string2[nrow + 1]:
+                    middle_space = "|" + middle_space
+                else:
+                    middle_space = " " + middle_space
+                    
         # Gap in sequence
         if matrix_moves[nrow][ncol] == "top":
             nrow -= 1
@@ -289,8 +323,9 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     # Format output into a single string
     for i in range(0, len(align1), 60):
         global_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
-
-    return global_alignment
+    
+    
+    return matrix, global_alignment
 
 
 
@@ -395,7 +430,7 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+blosum_number+".txt"))
+        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
     
     #Fill out the matrix
     #O(m), m is the number of rows of the matrix
@@ -503,22 +538,29 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
                 align1 = string1[col + 1] + align1
                 align2 = string2[row + 1] + align2
-
-                if string1[col + 1] == string2[row + 1]:
-                    middle_space = "|" + middle_space
-
-                #blosum score greater than 0
-                elif int(blosum[string1[col+1]][string2[row+1]]) > 0:
-                    middle_space = ":" + middle_space
-
-                #Blosum score 0 or negative
-                elif int(blosum[string1[col+1]][string2[row+1]]) <= 0:
-                    middle_space = "." + middle_space
-
-                #Gap
-                else:
-                    middle_space = " " + middle_space
-            
+                
+                if dna_prot == "protein":
+                    if string1[col + 1] == string2[row + 1]:
+                        middle_space = "|" + middle_space
+    
+                    #blosum score greater than 0
+                    elif int(blosum[string1[col+1]][string2[row+1]]) > 0:
+                        middle_space = ":" + middle_space
+    
+                    #Blosum score 0 or negative
+                    elif int(blosum[string1[col+1]][string2[row+1]]) <= 0:
+                        middle_space = "." + middle_space
+    
+                    #Gap
+                    else:
+                        middle_space = " " + middle_space
+                        
+                if dna_prot == "dna":
+                    if string1[col + 1] == string2[row + 1]:
+                        middle_space = "|" + middle_space
+                    else:
+                        middle_space = " " + middle_space
+                    
             #Check if the left score is the highest
             #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 1:
@@ -550,6 +592,6 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
 
     for i in range(0, len(final_align1), 60):
-        final_alignment += final_align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  
+        final_alignment += final_align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
 
     return matrix, final_alignment, total_alignment_scores
