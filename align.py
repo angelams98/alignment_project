@@ -18,6 +18,7 @@ blosum_files = ["30", "35", "40", "45", "50", "55", "62", "65", "70",
 is_protein = False
 pos = 0
 accepted_filetypes = ['.fsa', '.fasta', '.fna']
+alignment = ""
 
 
 #Read the file
@@ -131,7 +132,7 @@ if is_protein == False:
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
-        print("The score of the best alignment is", score[0])
+        print("The score of the best alignment is", score)
     
 
 
@@ -189,4 +190,4 @@ elif is_protein == True:
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
-        print("The score of the best alignment is", score[0])
+        print("The score of the best alignment is", score)

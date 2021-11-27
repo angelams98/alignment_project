@@ -208,6 +208,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
         #O(n), n is the number of columns in the matrix
         for col in range(ncol + 1):
+            
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
                 if matrix_moves[row][col-1] != "diag":
@@ -268,11 +269,13 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 if list_values.index(max(list_values)) == 2:
                     matrix_moves[row][col] = "top"
 
-    # If we reach first row or column, the algorithm ends
-    while nrow > 0 or ncol > 0:
+
+    # If we reach last position from the end for each string (first position contains "*"), program stops
+    while nrow > 1 or ncol > 1:
         
         # Match between sequences
-        if matrix_moves[nrow][ncol] == "diag":
+        #nrow and ncol are the length of the strings and matrix is bigger
+        if matrix_moves[nrow + 1][ncol + 1] == "diag":
             nrow -= 1
             ncol -= 1
         
@@ -298,14 +301,14 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 else:
                     middle_space = " " + middle_space
                     
-            if dna_prot == "dna":
+            elif dna_prot == "dna":
                 if string1[ncol + 1] == string2[nrow + 1]:
                     middle_space = "|" + middle_space
                 else:
                     middle_space = " " + middle_space
                     
         # Gap in sequence
-        if matrix_moves[nrow][ncol] == "top":
+        if matrix_moves[nrow + 1][ncol + 1] == "top":
             nrow -= 1
             
             align1 = "-" + align1
@@ -313,7 +316,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             middle_space = " " + middle_space
 
         # Gap in sequence
-        if matrix_moves[nrow][ncol] == "left":
+        if matrix_moves[nrow + 1][ncol + 1] == "left":
             ncol -= 1
 
             align1 = string1[ncol + 1] + align1
@@ -485,6 +488,7 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     matrix_max_position_list = []
     total_align1 = []
     total_align2 = []
+    total_align_middle = []
     total_alignment_scores = []
     final_alignment = ""
 
@@ -540,15 +544,16 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 align2 = string2[row + 1] + align2
                 
                 if dna_prot == "protein":
+
                     if string1[col + 1] == string2[row + 1]:
                         middle_space = "|" + middle_space
     
                     #blosum score greater than 0
-                    elif int(blosum[string1[col+1]][string2[row+1]]) > 0:
+                    elif int(blosum[string1[col + 1]][string2[row + 1]]) > 0:
                         middle_space = ":" + middle_space
     
                     #Blosum score 0 or negative
-                    elif int(blosum[string1[col+1]][string2[row+1]]) <= 0:
+                    elif int(blosum[string1[col + 1]][string2[row + 1]]) <= 0:
                         middle_space = "." + middle_space
     
                     #Gap
@@ -558,6 +563,9 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 if dna_prot == "dna":
                     if string1[col + 1] == string2[row + 1]:
                         middle_space = "|" + middle_space
+                        #print(align1)
+                        #print(middle_space)
+                        #print(align2)
                     else:
                         middle_space = " " + middle_space
                     
@@ -578,11 +586,13 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 score += top_score
 
                 align1 = "-" + align1
-                align2 = string2[row] + align2
+                #MODIFIED
+                align2 = string2[row + 1] + align2
                 middle_space = " " + middle_space
 
         total_align1.append(align1)
         total_align2.append(align2)
+        total_align_middle.append(middle_space)
 
         #O(1), it is appending elements to a list
         total_alignment_scores.append(score)
@@ -590,8 +600,9 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
+        final_align_middle = total_align_middle[total_alignment_scores.index(max(total_alignment_scores))]
 
     for i in range(0, len(final_align1), 60):
-        final_alignment += final_align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
+        final_alignment += final_align1[i:i+60] + "\n" + final_align_middle[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
 
-    return matrix, final_alignment, total_alignment_scores
+    return matrix, final_alignment, max(total_alignment_scores)
