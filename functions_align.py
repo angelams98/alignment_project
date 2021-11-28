@@ -159,7 +159,7 @@ def print_matrix(matrix):
 
 
 
-def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
+def alignment_nw1(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
     """
     Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm,
     followed by traceback to return the optimal global alignment.
@@ -835,3 +835,201 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         final_alignment += final_align1[i:i+60] + "\n" + final_align_middle[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
 
     return matrix, final_alignment, max(total_alignment_scores)
+
+
+def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
+    """
+    Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm,
+    followed by traceback to return the optimal global alignment.
+    
+    PSEUDOCODE:
+        Initialize two list of lists matrices, one for keeping track of scores (MATRIX) 
+        and one for keeping track of where the score was calculated from (MATRIX_MOVES)
+        Create a BLOSUM matrix if sequences are protein
+        
+        # Creating score and moves matrices
+        Double-loop over rows and columns of matrices
+            Look at the scores of the cells to let, top and top-left of the current cell. 
+            Calculate scores each of these would give, then select highest one to record to MATRIX.
+            Record which direction the current score came from to MATRIX_MOVES
+            
+        # Traceback to get final alignment
+        Start in the last cell of MATRIX_MOVES
+        While not in the first row or column of MATRIX_moves:
+            If MATRIX_MOVES = 'diag':
+                Position is a match, assign amino acids / nucleotides for this position to alignment
+                Move up and to the left
+            If MATRIX_MOVES = 'top':
+                A gap is opened in sequence 1 of the alignment
+                Move up
+            If MATRIX_MOVES = 'left':
+                A gap is opened in sequence 2 of the alignment
+                Move left
+                
+        Format and return the output
+        
+
+    :string1: A string containing the first DNA/protein sequence to be aligned
+    :string2: A string containing the other DNA/protein sequence to be aligned
+    :blosum_number: User-specified BLOSUM matrix to use for scoring amino acid substitutions
+    :dna_prot: A string which can be either 'DNA' or 'protein' to define whether the sequences are protein or DNA
+    :match: A score for when the sequences match
+    :mismatch: A penalty for mismatching positions of the sequences
+    :opening: A penalty for opening a gap in the alignment
+    :exten: A penalty for extending a gap in the alignment
+
+    :returns: The optimal global alignment of two sequences
+    """
+
+    #Initialize variables 
+    ncol = len(string1)
+    nrow = len(string2)
+    string1 = "*" + string1
+    string2 = "*" + string2
+    align1 = ""
+    align2 = ""
+    middle_space = ""
+    global_alignment = ""
+    value_left_list = []
+    value_top_list = []
+    
+    # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
+    if dna_prot == "protein":
+        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+    
+    nrow = len(string2)
+    ncol = len(string1)
+    
+    # Initialize score and movement matrices
+    score_matrix = make_matrix(string1, string2, 0)
+    moves_matrix = make_matrix(string1, string2, 'diag')
+    
+    string1 = "*" + string1
+    string2 = "*" + string2
+    
+    # Create matrix of scores and matrix of moves
+    for row in range(nrow+1):
+        for col in range(ncol+1):
+            
+            #In the first row we only calculate the values using the values from the left, so we start in position 1
+            if row == 0 and col != 0:
+                if moves_matrix[row][col-1] != 'diag':
+                    score_matrix[row][col] = score_matrix[row][col-1] + exten
+                else:
+                    score_matrix[row][col] = score_matrix[row][col-1] + opening
+                
+                moves_matrix[row][col] = 'left'
+                    
+            #In the first column we only calculate the values using the values from the top, so we start in row 1
+            if row != 0 and col == 0:
+                if moves_matrix[row-1][col] != 'diag':
+                    score_matrix[row][col] = score_matrix[row-1][col] + exten
+                else:
+                    score_matrix[row][col] = score_matrix[row-1][col] + opening
+                    
+                moves_matrix[row][col] = 'top'
+                
+                
+            #When not in the first row and column, the values can be calculated from left, top or diagonal
+            if row != 0 and col != 0:
+                
+                # For DNA look at whether the position is a match or a mismatch
+                if dna_prot == 'dna':
+                    if string1[col] == string2[row]:
+                        value_diag  = score_matrix[row-1][col-1] + match
+    
+                    if string1[col] != string2[row]:
+                        value_diag  = score_matrix[row-1][col-1] + mismatch
+                    
+                # For proteins look at the blosum matrix to see if a gap is opened in the alignment or not,
+                # then check substituion matrix (BLOSUM) for score in case of not a gap
+                if dna_prot == 'protein':
+                    value_diag  = score_matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+                    
+                # Check all previous columns for score
+                for i in range(col, 0, -1):
+                    value_left = score_matrix[row][col-i] + opening + exten * i
+                    value_left_list.append(value_left)
+                
+                value_left = max(value_left_list)
+                value_left_list = []
+                    
+                # Check all previous rows for score
+                for j in range(row, 0, -1):
+                    value_top = score_matrix[row-j][col] + opening + exten * j
+                    value_top_list.append(value_top)
+                
+                value_top = max(value_top_list)
+                value_top_list = []
+                
+                #The correct values is going to be the maximum value from the 3 we have calculated above 
+                list_values = [value_left, value_top, value_diag]
+                score_matrix[row][col] = max(list_values)
+                
+                #Check from which cell we have calculated the score to save the movement
+                if list_values.index(max(list_values)) == 2:
+                    moves_matrix[row][col] = "diag"
+                elif list_values.index(max(list_values)) == 1:
+                    moves_matrix[row][col] = "top"
+                elif list_values.index(max(list_values)) == 0:
+                    moves_matrix[row][col] = "left"
+
+
+    # If we reach last position from the end for each string (first position contains "*"), program stops
+    while nrow > 1 or ncol > 1:
+        
+        # Match between sequences
+        #nrow and ncol are the length of the strings and matrix is bigger
+        if matrix_moves[nrow + 1][ncol + 1] == "diag":
+            nrow -= 1
+            ncol -= 1
+        
+            align1 = string1[ncol + 1] + align1
+            align2 = string2[nrow + 1] + align2
+        
+        # Lines below creates a middle line that shows the similarity of positions in the output
+            if dna_prot == "protein":
+                # Check whether sequences are the same in this position
+                if string1[ncol + 1] == string2[nrow + 1]:
+                    middle_space = "|" + middle_space
+    
+                # If sequences are not the same in this position, check the score to determine how great the similarity is
+                # If score above 0 = high similarity
+                elif int(blosum[string1[ncol + 1]][string2[nrow + 1]]) > 0:
+                    middle_space = ":" + middle_space
+    
+                # If score is below 0 = low similarity
+                elif int(blosum[string1[ncol + 1]][string2[nrow+1]]) <= 0:
+                    middle_space = "." + middle_space
+    
+                # If there is a gap
+                else:
+                    middle_space = " " + middle_space
+                    
+            elif dna_prot == "dna":
+                if string1[ncol + 1] == string2[nrow + 1]:
+                    middle_space = "|" + middle_space
+                else:
+                    middle_space = " " + middle_space
+                    
+        # Gap in sequence
+        if matrix_moves[nrow + 1][ncol + 1] == "top":
+            nrow -= 1
+            
+            align1 = "-" + align1
+            align2 = string2[nrow + 1] + align2
+            middle_space = " " + middle_space
+
+        # Gap in sequence
+        if matrix_moves[nrow + 1][ncol + 1] == "left":
+            ncol -= 1
+
+            align1 = string1[ncol + 1] + align1
+            align2 = "-" + align2
+            middle_space = " " + middle_space
+
+    # Format output into a single string
+    for i in range(0, len(align1), 60):
+        global_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
+    
+    return matrix, global_alignment
