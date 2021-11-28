@@ -347,7 +347,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     return matrix, global_alignment
 
 
-def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
+def alignment_sw1(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
     """
         Calculates a scoring matrix for two DNA/protein sequences using the Smith-Waterman algorithm
 
@@ -574,6 +574,261 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
         final_align_middle = total_align_middle[total_alignment_scores.index(max(total_alignment_scores))]
+
+    
+    for i in range(0, len(final_align1), 60):
+        final_alignment += final_align1[i:i+60] + "\n" + final_align_middle[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
+
+    return matrix, final_alignment, max(total_alignment_scores)
+
+
+def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
+    """
+        Calculates a scoring matrix for two DNA/protein sequences using the Smith-Waterman algorithm
+
+        PSEUDOCODE:
+            Initialize two list of lists matrices, one for keeping track of scores (MATRIX) 
+            and one for keeping track of which cell scores came from (MATRIX_MOVES).
+            Create a BLOSUM matrix if sequences are protein
+            
+            # Creating score and moves matrices
+            Double-loop over rows and columns of matrices
+                Look at the scores of the cells to let, top and top-left of the current cell. 
+                Calculate scores each of these would give, then select highest one to record to MATRIX.
+                If highest score is a negative number, set score to 0.
+                
+                Record to MATRIX_MOVES whether the score was positive and came from top-left 
+                cell (introduce match in alignment), positive and came from the cell above or to 
+                the left (introduce gap in alignment), or if the score was negative/zero (end 
+                alignment if encountered).
+            
+            # Finding highest scores in MATRIX
+            Double-loop over rows and columns of MATRIX
+                If current cell has same score as previous highest score
+                    Append position to list
+                If current cell has higher score than previous highest score
+                    Set as new highest score
+                    Clear list
+                    Append position to list
+            
+            # Traceback
+            For i highest scoring positions, the traceback has to run i times:
+                Start in first of the highest scoring positions
+                While a zero is not in the cell top-left of the current cell:
+                    
+                    Get scores from cells to the left, top and top-left of current cell
+                    
+                    If top-left score highest:
+                        Position is a match, assign amino acids / nucleotides for this position to alignment
+                        Move up and to the left
+                    
+                    If left score highest:
+                        A gap is opened in sequence 1 of the alignment
+                        Move up
+                    
+                    If above score highest:
+                        A gap is opened in sequence 2 of the alignment
+                        Move left
+            
+            Format and return the output
+
+
+        :string1: The first DNA/protein sequence to be aligned as a string
+        :string2: The other DNA/protein sequence to be aligned as a string
+        :blosum_number: User-specified BLOSUM matrix to use for scoring amino acid substitutions
+        :dna_prot: A string which can be either 'DNA' or 'protein' which defines whether the sequences are protein or DNA
+        :match: A score for when the sequences match
+        :mismatch: A penalty for mismatching positions of the sequences
+        :opening: A penalty for opening a gap in the alignment
+        :exten: A penalty for extending a gap in the alignment
+    
+        :returns: A matrix of containing the scores of all possible alignments
+    """
+    
+    #Initialize the variables 
+    matrix = make_matrix(string1, string2, 0)
+    matrix_moves = make_matrix(string1, string2, "zero")
+    ncol = len(string1)
+    nrow = len(string2)
+    value_left_list = []
+    value_top_list = []
+
+    string1 = "*" + string1
+    string2 = "*" + string2
+
+    # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
+    if dna_prot == "protein":
+        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+    
+    #Fill out the matrix
+    for row in range(1, nrow + 1):
+        for col in range(1, ncol + 1):
+
+            if dna_prot == "dna":
+                #We compare the nucleotides in the strings
+                if string1[col] == string2[row]:
+                    value_diag  = matrix[row-1][col-1] + match
+
+                if string1[col] != string2[row]:
+                    value_diag  = matrix[row-1][col-1] + mismatch
+
+            elif dna_prot == "protein":
+                #We calculate the score using the blosum matrix
+                value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+
+            for i in range(col, 0, -1):
+                value_left = matrix[row][col-i] + opening + exten*i
+                value_left_list.append(value_left)
+            
+            value_left = max(value_left_list)
+            value_left_list = []
+
+            for j in range(row, 0, -1):
+                value_top = matrix[row-j][col] + opening + exten*j
+                value_top_list.append(value_top)
+            
+            value_top = max(value_top_list)
+            value_top_list = []
+
+
+            #The correct value is going to be the maximum from the 3 we have calculated above or 0
+            list_values = [value_diag, value_left, value_top, 0]
+            matrix[row][col] = max(list_values)
+ 
+
+            #We store the cell from which we have calculated the score
+            if list_values.index(max(list_values)) == 0:
+                matrix_moves[row][col] = "diag"
+
+            elif list_values.index(max(list_values)) == 3:
+                matrix_moves[row][col] = "zero"
+
+            #it comes from the left, we check if the previous cell was diagonal or zero
+            elif list_values.index(max(list_values)) == 1:
+                if matrix_moves[row][col-1] == "diag" or matrix_moves[row][col-1] == "zero":
+                    matrix_moves[row][col] = "open"
+                else:
+                    matrix_moves[row][col] = "exten"
+            
+            elif list_values.index(max(list_values)) == 2:
+                if matrix_moves[row-1][col] == "diag" or matrix_moves[row-1][col] == "zero":
+                    matrix_moves[row][col] = "open"
+                else:
+                    matrix_moves[row][col] = "exten"
+
+
+
+
+
+
+    #Initialize the variables
+    matrix_max_value = -1
+    matrix_max_position_list = []
+    total_align1 = []
+    total_align2 = []
+    total_align_middle = []
+    total_alignment_scores = []
+    final_alignment = ""
+
+
+    for row in range(len(matrix)):
+    
+        for col in range(len(matrix[row])):
+
+            #If we find the same value we already have, we save it to do the alignment for that position
+            if matrix[row][col] == matrix_max_value:
+                matrix_max_position_list.append([row, col])
+
+            #If we find a higher value, we save the value and the position
+            if matrix[row][col] > matrix_max_value:
+                matrix_max_value = matrix[row][col]
+                matrix_max_position_list = []
+
+                matrix_max_position_list.append([row, col])
+
+       
+    #We do the alignments for all the maximum values we have saved
+    for i in range(len(matrix_max_position_list)):
+
+        row = matrix_max_position_list[i][0] 
+        col = matrix_max_position_list[i][1] 
+
+        align1 = ""
+        align2 = ""
+        
+        diag_score = -1
+        middle_space = ""
+
+
+        while diag_score != 0:
+
+            score = matrix[row][col]
+            diag_score = matrix[row-1][col-1]
+            left_score = matrix[row][col-1]
+            top_score = matrix[row-1][col]
+            values = [diag_score, left_score, top_score]
+                    
+            #Check if the diagonal score is the highest
+            if values.index(max(values)) == 0:
+                row = row - 1
+                col = col - 1
+                score += diag_score
+
+                align1 = string1[col + 1] + align1
+                align2 = string2[row + 1] + align2
+                
+                if dna_prot == "protein":
+
+                    if string1[col + 1] == string2[row + 1]:
+                        middle_space = "|" + middle_space
+    
+                    #blosum score greater than 0
+                    elif int(blosum[string1[col + 1]][string2[row + 1]]) > 0:
+                        middle_space = ":" + middle_space
+    
+                    #Blosum score 0 or negative
+                    elif int(blosum[string1[col + 1]][string2[row + 1]]) <= 0:
+                        middle_space = "." + middle_space
+    
+                    #Gap
+                    else:
+                        middle_space = " " + middle_space
+                        
+                if dna_prot == "dna":
+                    if string1[col + 1] == string2[row + 1]:
+                        middle_space = "|" + middle_space
+                    
+                    else:
+                        middle_space = " " + middle_space
+                    
+            #Check if the left score is the highest
+            if values.index(max(values)) == 1:
+                col = col - 1
+                score += left_score
+
+                align1 = string1[col + 1] + align1
+                align2 = "-" + align2
+                middle_space = " " + middle_space
+
+            #Check if the top score is the highest
+            if values.index(max(values)) == 2:
+                row = row - 1
+                score += top_score
+
+                align1 = "-" + align1
+                align2 = string2[row + 1] + align2
+                middle_space = " " + middle_space
+
+
+        total_align1.append(align1)
+        total_align2.append(align2)
+        total_align_middle.append(middle_space)
+        total_alignment_scores.append(score)
+
+
+    final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
+    final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
+    final_align_middle = total_align_middle[total_alignment_scores.index(max(total_alignment_scores))]
 
     
     for i in range(0, len(final_align1), 60):

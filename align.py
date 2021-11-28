@@ -109,7 +109,7 @@ if is_protein == False:
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n")
         print("And the parameters are match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
         
-        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, match, mismatch, opening, extension)
+        (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
@@ -119,7 +119,7 @@ if is_protein == False:
         print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guys by the way)\n")
         print("And the parameters are match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
 
-        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, match, mismatch, opening, extension)
+        (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
 
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
