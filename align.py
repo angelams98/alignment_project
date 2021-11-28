@@ -103,7 +103,7 @@ if is_protein == False:
 
     if mismatch > 0:
         mismatch = float("-" + str(mismatch))
-    if openings > 0:
+    if opening > 0:
         opening = float("-" + str(opening))
     if extension > 0:
         extension = float("-" + str(extension))
@@ -113,21 +113,24 @@ if is_protein == False:
 
     if alignment == "GLOBAL":
 
-        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n")
-        print("And the parameters are match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
+        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n")
+        print("And the parameters are: match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
+        
+        print("\n")
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
 
     elif alignment == "LOCAL":
 
-        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guys by the way)\n")
-        print("And the parameters are match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
+        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guys by the way)\n")
+        print("And the parameters are: match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
 
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
-
+        
+        print("\n")
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         print("The score of the best alignment is", score)
@@ -173,21 +176,26 @@ elif is_protein == True:
 
     if alignment == "GLOBAL" :
 
-        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
-        print("And the parameters are opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
-
-        print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
+        print("And the parameters are: opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
+        
+        print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        print("\n")
+        
         print(alignment)
         
 
     elif alignment == "LOCAL":
 
-        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
-        print("And the parameters are opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
+        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
+        print("And the parameters are: opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
         
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
+        
+        print("\n")
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
+        
         print(alignment)
         print("The score of the best alignment is", score)
