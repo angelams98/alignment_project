@@ -716,9 +716,8 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 else:
                     matrix_moves[row][col] = "exten"
 
-
-
-
+            # Report to user how far the progress is
+            print('\rProgress: {:<8}'.format(str(round(row/nrow*100, 2))+"%"), end="")
 
 
     #Initialize the variables
@@ -962,18 +961,20 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 value_top = max(value_top_list)
                 value_top_list = []
                 
-                #The correct values is going to be the maximum value from the 3 we have calculated above 
+                # The correct values is going to be the maximum value from the 3 we have calculated above 
                 list_values = [value_left, value_top, value_diag]
                 score_matrix[row][col] = max(list_values)
                 
-                #Check from which cell we have calculated the score to save the movement
+                # Check from which cell we have calculated the score to save the movement
                 if list_values.index(max(list_values)) == 2:
                     moves_matrix[row][col] = "diag"
                 elif list_values.index(max(list_values)) == 1:
                     moves_matrix[row][col] = "top"
                 elif list_values.index(max(list_values)) == 0:
                     moves_matrix[row][col] = "left"
-
+                
+                # Report to user how far the progress is
+                print('\rProgress: {:<8}'.format(str(round(row/nrow*100, 2))+"%"), end="")
 
     # If we reach last position from the end for each string (first position contains "*"), program stops
     while nrow > 1 or ncol > 1:
