@@ -219,7 +219,7 @@ def alignment_nw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
     
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+        blosum = blosum_matrix(str("BLOSUM" + str(blosum_number) + ".txt"))
 
     # Create matrix of scores and matrix of moves
     for row in range(nrow + 1):
@@ -228,10 +228,10 @@ def alignment_nw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
             
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col !=0:
-                if matrix_moves[row][col-1] != "diag":
-                    matrix[row][col] = matrix[row][col-1] + exten
+                if matrix_moves[row][col - 1] != "diag":
+                    matrix[row][col] = matrix[row][col - 1] + exten
                 else:
-                    matrix[row][col] = matrix[row][col-1] + opening
+                    matrix[row][col] = matrix[row][col - 1] + opening
                 matrix_moves[row][col] = "left"
 
             #In the first column we only calculate the values using the values from the top, so we start in row 1
@@ -310,7 +310,7 @@ def alignment_nw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
                     middle_space = ":" + middle_space
     
                 # If score is below 0 = low similarity
-                elif int(blosum[string1[ncol + 1]][string2[nrow+1]]) <= 0:
+                elif int(blosum[string1[ncol + 1]][string2[nrow + 1]]) <= 0:
                     middle_space = "." + middle_space
     
                 # If there is a gap
@@ -341,7 +341,7 @@ def alignment_nw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
 
     # Format output into a single string
     for i in range(0, len(align1), 60):
-        global_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
+        global_alignment += align1[i : i + 60] + "\n" + middle_space[i : i + 60] + "\n"+ align2[i : i + 60] + "\n" + "\n"
     
     
     return matrix, global_alignment
@@ -421,7 +421,7 @@ def alignment_sw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
 
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+        blosum = blosum_matrix(str("BLOSUM" + str(blosum_number) + ".txt"))
     
     #Fill out the matrix
     for row in range(1, nrow + 1):
@@ -430,27 +430,27 @@ def alignment_sw1(string1, string2, blosum_number, dna_prot, opening, exten, mat
             if dna_prot == "dna":
                 #We compare the nucleotides in the strings
                 if string1[col] == string2[row]:
-                    value_diag  = matrix[row-1][col-1] + match
+                    value_diag  = matrix[row - 1][col - 1] + match
 
                 if string1[col] != string2[row]:
-                    value_diag  = matrix[row-1][col-1] + mismatch
+                    value_diag  = matrix[row - 1][col - 1] + mismatch
 
             elif dna_prot == "protein":
                 #We calculate the score using the blosum matrix
-                value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+                value_diag  = matrix[row - 1][col - 1] + int(blosum[string1[col]][string2[row]])
 
             #We check if the previous value was a gap, so the value score is for gap opening or extension
-            if matrix_moves[row][col-1] == "gap":
-                value_left = matrix[row][col-1] + exten
+            if matrix_moves[row][col - 1] == "gap":
+                value_left = matrix[row][col - 1] + exten
 
-            if matrix_moves[row-1][col] == "gap":
-                value_top = matrix[row-1][col] + exten
+            if matrix_moves[row - 1][col] == "gap":
+                value_top = matrix[row - 1][col] + exten
 
-            if matrix_moves[row][col-1] != "gap":
-                value_left = matrix[row][col-1] + opening
+            if matrix_moves[row][col - 1] != "gap":
+                value_left = matrix[row][col - 1] + opening
 
-            if matrix_moves[row-1][col] != "gap":
-                value_top = matrix[row-1][col] + opening
+            if matrix_moves[row - 1][col] != "gap":
+                value_top = matrix[row - 1][col] + opening
 
             #The correct value is going to be the maximum from the 3 we have calculated above or 0
             list_values = [value_diag, value_left, value_top, 0]
@@ -658,7 +658,7 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+        blosum = blosum_matrix(str("BLOSUM" + str(blosum_number) + ".txt"))
     
     #Fill out the matrix
     for row in range(1, nrow + 1):
@@ -667,24 +667,24 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             if dna_prot == "dna":
                 #We compare the nucleotides in the strings
                 if string1[col] == string2[row]:
-                    value_diag  = matrix[row-1][col-1] + match
+                    value_diag  = matrix[row - 1][col - 1] + match
 
                 if string1[col] != string2[row]:
-                    value_diag  = matrix[row-1][col-1] + mismatch
+                    value_diag  = matrix[row - 1][col - 1] + mismatch
 
             elif dna_prot == "protein":
                 #We calculate the score using the blosum matrix
-                value_diag  = matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+                value_diag  = matrix[row - 1][col - 1] + int(blosum[string1[col]][string2[row]])
 
             for i in range(col, 0, -1):
-                value_left = matrix[row][col-i] + opening + exten*i
+                value_left = matrix[row][col - i] + opening + exten*i
                 value_left_list.append(value_left)
             
             value_left = max(value_left_list)
             value_left_list = []
 
             for j in range(row, 0, -1):
-                value_top = matrix[row-j][col] + opening + exten*j
+                value_top = matrix[row - j][col] + opening + exten*j
                 value_top_list.append(value_top)
             
             value_top = max(value_top_list)
@@ -705,13 +705,13 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
             #it comes from the left, we check if the previous cell was diagonal or zero
             elif list_values.index(max(list_values)) == 1:
-                if matrix_moves[row][col-1] == "diag" or matrix_moves[row][col-1] == "zero":
+                if matrix_moves[row][col - 1] == "diag" or matrix_moves[row][col - 1] == "zero":
                     matrix_moves[row][col] = "open"
                 else:
                     matrix_moves[row][col] = "exten"
             
             elif list_values.index(max(list_values)) == 2:
-                if matrix_moves[row-1][col] == "diag" or matrix_moves[row-1][col] == "zero":
+                if matrix_moves[row - 1][col] == "diag" or matrix_moves[row - 1][col] == "zero":
                     matrix_moves[row][col] = "open"
                 else:
                     matrix_moves[row][col] = "exten"
@@ -894,7 +894,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
-        blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
+        blosum = blosum_matrix(str("BLOSUM" + str(blosum_number) + ".txt"))
     
     
     # Initialize score and movement matrices
@@ -905,24 +905,24 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     string2 = "*" + string2
     
     # Create matrix of scores and matrix of moves
-    for row in range(nrow+1):
-        for col in range(ncol+1):
+    for row in range(nrow + 1):
+        for col in range(ncol + 1):
             
             #In the first row we only calculate the values using the values from the left, so we start in position 1
             if row == 0 and col != 0:
-                if moves_matrix[row][col-1] != 'diag':
-                    score_matrix[row][col] = score_matrix[row][col-1] + exten
+                if moves_matrix[row][col - 1] != 'diag':
+                    score_matrix[row][col] = score_matrix[row][col - 1] + exten
                 else:
-                    score_matrix[row][col] = score_matrix[row][col-1] + opening
+                    score_matrix[row][col] = score_matrix[row][col - 1] + opening
                 
                 moves_matrix[row][col] = 'left'
                     
             #In the first column we only calculate the values using the values from the top, so we start in row 1
             if row != 0 and col == 0:
-                if moves_matrix[row-1][col] != 'diag':
-                    score_matrix[row][col] = score_matrix[row-1][col] + exten
+                if moves_matrix[row - 1][col] != 'diag':
+                    score_matrix[row][col] = score_matrix[row - 1][col] + exten
                 else:
-                    score_matrix[row][col] = score_matrix[row-1][col] + opening
+                    score_matrix[row][col] = score_matrix[row - 1][col] + opening
                     
                 moves_matrix[row][col] = 'top'
                 
@@ -933,19 +933,19 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 # For DNA look at whether the position is a match or a mismatch
                 if dna_prot == 'dna':
                     if string1[col] == string2[row]:
-                        value_diag  = score_matrix[row-1][col-1] + match
+                        value_diag  = score_matrix[row - 1][col - 1] + match
     
                     if string1[col] != string2[row]:
-                        value_diag  = score_matrix[row-1][col-1] + mismatch
+                        value_diag  = score_matrix[row - 1][col - 1] + mismatch
                     
                 # For proteins look at the blosum matrix to see if a gap is opened in the alignment or not,
                 # then check substituion matrix (BLOSUM) for score in case of not a gap
                 if dna_prot == 'protein':
-                    value_diag  = score_matrix[row-1][col-1] + int(blosum[string1[col]][string2[row]])
+                    value_diag  = score_matrix[row - 1][col - 1] + int(blosum[string1[col]][string2[row]])
                     
                 # Check all previous columns for score
                 for i in range(col, 0, -1):
-                    value_left = score_matrix[row][col-i] + opening + exten * i
+                    value_left = score_matrix[row][col - i] + opening + exten * i
                     value_left_list.append(value_left)
                 
                 value_left = max(value_left_list)
@@ -953,7 +953,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                     
                 # Check all previous rows for score
                 for j in range(row, 0, -1):
-                    value_top = score_matrix[row-j][col] + opening + exten * j
+                    value_top = score_matrix[row - j][col] + opening + exten * j
                     value_top_list.append(value_top)
                 
                 value_top = max(value_top_list)
@@ -972,7 +972,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                     moves_matrix[row][col] = "left"
                 
                 # Report to user how far the progress is
-                print('\rProgress: {:<8}'.format(str(round(row/nrow*100, 2))+"%"), end="")
+                print('\rProgress: {:<8}'.format(str(round(row/nrow*100, 2)) + "%"), end = "")
 
     # If we reach last position from the end for each string (first position contains "*"), program stops
     while nrow > 1 or ncol > 1:
@@ -1029,6 +1029,6 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
     # Format output into a single string
     for i in range(0, len(align1), 60):
-        global_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
+        global_alignment += align1[i : i + 60] + "\n" + middle_space[i : i + 60] + "\n"+ align2[i : i + 60] + "\n" + "\n"
     
     return score_matrix, global_alignment

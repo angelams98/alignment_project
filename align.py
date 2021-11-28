@@ -107,7 +107,7 @@ if is_protein == False:
         opening = float("-" + str(opening))
     if extension > 0:
         extension = float("-" + str(extension))
-    print("\n")
+    print()
 
 
 
@@ -130,7 +130,7 @@ if is_protein == False:
 
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print("\n")
+        print()
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         print("The score of the best alignment is", score)
@@ -161,9 +161,9 @@ elif is_protein == True:
     print("The BLOSUM matrix options are: ")
     
     for i in range(len(blosum_files)):
-        print("BLOSUM"+ str(blosum_files[i]), end=", ")
+        print("BLOSUM"+ str(blosum_files[i]), end = ", ")
     blosum_int = input_type_limiter("Specify the blosum matrix you want to use (introduce the number only): ", int)
-    print("\n")
+    print()
 
     if blosum_int in blosum_files:
         blosum = blosum_int 
