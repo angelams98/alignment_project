@@ -118,7 +118,6 @@ def blosum_matrix(blosum_file):
 
         if first_row != None:
             line = "-" + line[:-1]
-            #O(1), append to a list
             blosum_list.append(line.split())
             flag = True
 
