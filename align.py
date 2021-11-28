@@ -100,6 +100,13 @@ if is_protein == False:
     mismatch = input_type_limiter("Specify the mismatch penalty (has to be a number): ", float)
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
+
+    if mismatch > 0:
+        mismatch = float("-" + str(mismatch))
+    if openings > 0:
+        opening = float("-" + str(opening))
+    if extension > 0:
+        extension = float("-" + str(extension))
     print("\n")
 
 
@@ -142,6 +149,10 @@ elif is_protein == True:
     print("Please tell me which parameters you want to use\n")
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
+    if opening > 0:
+        opening = float("-" + str(opening))
+    if extension > 0:
+        extension = float("-" + str(extension))
     
     print()
     print("The BLOSUM matrix options are: ")
