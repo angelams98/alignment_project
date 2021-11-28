@@ -896,8 +896,6 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     if dna_prot == "protein":
         blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
     
-    nrow = len(string2)
-    ncol = len(string1)
     
     # Initialize score and movement matrices
     score_matrix = make_matrix(string1, string2, 0)
@@ -981,7 +979,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         
         # Match between sequences
         #nrow and ncol are the length of the strings and matrix is bigger
-        if matrix_moves[nrow + 1][ncol + 1] == "diag":
+        if moves_matrix[nrow + 1][ncol + 1] == "diag":
             nrow -= 1
             ncol -= 1
         
@@ -1014,7 +1012,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                     middle_space = " " + middle_space
                     
         # Gap in sequence
-        if matrix_moves[nrow + 1][ncol + 1] == "top":
+        if moves_matrix[nrow + 1][ncol + 1] == "top":
             nrow -= 1
             
             align1 = "-" + align1
@@ -1022,7 +1020,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             middle_space = " " + middle_space
 
         # Gap in sequence
-        if matrix_moves[nrow + 1][ncol + 1] == "left":
+        if moves_matrix[nrow + 1][ncol + 1] == "left":
             ncol -= 1
 
             align1 = string1[ncol + 1] + align1
@@ -1033,4 +1031,4 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     for i in range(0, len(align1), 60):
         global_alignment += align1[i:i+60] + "\n" + middle_space[i:i+60] + "\n"+ align2[i:i+60] + "\n" + "\n"
     
-    return matrix, global_alignment
+    return score_matrix, global_alignment
