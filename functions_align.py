@@ -58,11 +58,9 @@ def make_matrix(string1, string2, filler):
     matrix = []
 
     #Create an empty matrix
-    #O(n), n is the number of rows in the new matrix
     for row in range(len(string2)+1):
         matrix.append([])
     
-        #O(m), m is the number of columns in the new matrix
         for col in range(len(string1)+1):
             matrix[row].append(filler)
 
@@ -111,7 +109,6 @@ def blosum_matrix(blosum_file):
         print("An error ocurred")
 
     # Create list of lists from lines in infile containing BLOSUM matrix
-    #O(k), k is the number of lines in the file
     for line in infile:
         line_temp = "".join(line.split())
         first_row = re.match(r'^[A-Z]{23}\**', line_temp)
@@ -121,14 +118,13 @@ def blosum_matrix(blosum_file):
 
         if first_row != None:
             line = "-" + line[:-1]
+            #O(1), append to a list
             blosum_list.append(line.split())
             flag = True
 
     # Create a dictionary of dictionaries
-    #O(n), n is the number of rows
     for row in range(len(blosum_list)):
         blosum_dict[blosum_list[row][0]] = {}
-        #O(m), m is the number of cols
         for col in range(len(blosum_list[0])) :
             if row == 0 or col == 0:
                 pass
@@ -137,6 +133,30 @@ def blosum_matrix(blosum_file):
 
     return blosum_dict
 
+
+def print_matrix(matrix):
+    """
+        Prints a list of lists matrix on screen in a formatted way
+        
+        PSEUDOCODE:
+            For each row of list of lists matrix:
+                Make/reset printlist
+                    Loop over columns of the given row    
+                        Fill printlist with the contents of each row
+                Print the printlist as a tab-separated string
+            
+            
+        :matrix: A list of lists matrix     
+    """
+
+    for row in range(len(matrix)):
+        printlist = []
+
+        for column in range(len(matrix[row])):
+            printlist.append(str(matrix[row][column]))
+
+        print("\t".join(printlist))
+    print("\n")  
 
 
 
@@ -203,10 +223,8 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
 
     # Create matrix of scores and matrix of moves
-    #O(m), m is the number of rows in the matrix
     for row in range(nrow + 1):
 
-        #O(n), n is the number of columns in the matrix
         for col in range(ncol + 1):
             
             #In the first row we only calculate the values using the values from the left, so we start in position 1
@@ -256,12 +274,11 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                     value_top = matrix[row-1][col] + opening
 
                 #The correct values is going to be the maximum value from the 3 we have calculated above  
-                #O(o), o is the number of elements it has to check
-                matrix[row][col] = max(value_left, value_top, value_diag)
                 list_values = [value_diag, value_left, value_top]
+                matrix[row][col] = max(list_values)
+                
 
                 #Check from which cell we have calculated the score to save the movement
-                #O(o), o is the number of elements it has to check
                 if list_values.index(max(list_values)) == 0:
                     matrix_moves[row][col] = "diag"
                 if list_values.index(max(list_values)) == 1:
@@ -329,34 +346,6 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     
     
     return matrix, global_alignment
-
-
-
-
-def print_matrix(matrix):
-    """
-        Prints a list of lists matrix on screen in a formatted way
-        
-        PSEUDOCODE:
-            For each row of list of lists matrix:
-                Make/reset printlist
-                    Loop over columns of the given row    
-                        Fill printlist with the contents of each row
-                Print the printlist as a tab-separated string
-            
-            
-        :matrix: A list of lists matrix     
-    """
-    #O(m), m is the number of rows in the matrix
-    for row in range(len(matrix)):
-        printlist = []
-        #O(n), n is the number of columns in the matrix
-        for column in range(len(matrix[row])):
-            printlist.append(str(matrix[row][column]))
-        print("\t".join(printlist))
-    print("\n")  
-
-
 
 
 def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
@@ -436,9 +425,7 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         blosum = blosum_matrix(str("BLOSUM"+str(blosum_number)+".txt"))
     
     #Fill out the matrix
-    #O(m), m is the number of rows of the matrix
     for row in range(1, nrow + 1):
-        #O(n), n is the number of rows of the matrix
         for col in range(1, ncol + 1):
 
             if dna_prot == "dna":
@@ -467,13 +454,11 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 value_top = matrix[row-1][col] + opening
 
             #The correct value is going to be the maximum from the 3 we have calculated above or 0
-            #O(o), o is the number of elements it has to check
-            matrix[row][col] = max(value_diag, value_left, value_top, 0)
- 
             list_values = [value_diag, value_left, value_top, 0]
+            matrix[row][col] = max(list_values)
+ 
 
             #We store the cell from which we have calculated the score
-            #O(o), o is the number of elements it has to check
             if list_values.index(max(list_values)) == 0:
                 matrix_moves[row][col] = "diag"
 
@@ -492,15 +477,13 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     total_alignment_scores = []
     final_alignment = ""
 
-    #O(m), m is the number of rows in the matrix
+
     for row in range(len(matrix)):
-        #O(n), n is the number of columns in the matrix
+    
         for col in range(len(matrix[row])):
 
             #If we find the same value we already have, we save it to do the alignment for that position
             if matrix[row][col] == matrix_max_value:
-
-                #O(1), it is appending elements into a list
                 matrix_max_position_list.append([row, col])
 
             #If we find a higher value, we save the value and the position
@@ -508,11 +491,9 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 matrix_max_value = matrix[row][col]
                 matrix_max_position_list = []
 
-                #O(1), it is appending elements to a list
                 matrix_max_position_list.append([row, col])
        
     #We do the alignments for all the maximum values we have saved
-    #O(p), p is the number of elements we have saved in matrix_max_position_list
     for i in range(len(matrix_max_position_list)):
 
         row = matrix_max_position_list[i][0] 
@@ -524,7 +505,7 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
         diag_score = -1
         middle_space = ""
 
-        #O(p*q), p is the number of rows we are checking, q is the number of columns we are checking
+
         while diag_score != 0:
 
             score = matrix[row][col]
@@ -534,7 +515,6 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             values = [diag_score, left_score, top_score]
                     
             #Check if the diagonal score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 0:
                 row = row - 1
                 col = col - 1
@@ -563,14 +543,11 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 if dna_prot == "dna":
                     if string1[col + 1] == string2[row + 1]:
                         middle_space = "|" + middle_space
-                        #print(align1)
-                        #print(middle_space)
-                        #print(align2)
+                    
                     else:
                         middle_space = " " + middle_space
                     
             #Check if the left score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 1:
                 col = col - 1
                 score += left_score
@@ -580,28 +557,26 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 middle_space = " " + middle_space
 
             #Check if the top score is the highest
-            #O(r), r is the number of elements we are comparing, only 3
             if values.index(max(values)) == 2:
                 row = row - 1
                 score += top_score
 
                 align1 = "-" + align1
-                #MODIFIED
                 align2 = string2[row + 1] + align2
                 middle_space = " " + middle_space
+
 
         total_align1.append(align1)
         total_align2.append(align2)
         total_align_middle.append(middle_space)
-
-        #O(1), it is appending elements to a list
         total_alignment_scores.append(score)
 
-        #O(p), p is the number of elements in total_alignment_scores, the same as in matrix_max_position_list
+
         final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
         final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
         final_align_middle = total_align_middle[total_alignment_scores.index(max(total_alignment_scores))]
 
+    
     for i in range(0, len(final_align1), 60):
         final_alignment += final_align1[i:i+60] + "\n" + final_align_middle[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
 

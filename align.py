@@ -30,12 +30,10 @@ else:
 
 
 # Check that the specified file is a fasta file
-#O(m), m is the number of elements in accepted_filetypes
 if re.search(r'\.\w+$', infile).group(0) in accepted_filetypes:
 
     #Try to open the file and generates an error message if it fails
     try:
-        #O(1), open a file
         infile = open(infile, 'r')
 
     except IOError as err:
@@ -49,15 +47,12 @@ else:
 
 
 #Saves the header lines and the sequences in lists
-#O(n), n is the number of lines in the file
 for line in infile:
     if line.startswith('>'):
-        #O(1), it is appending an element
         title.append(line[:-1])
 
         #If in the next line after ">", sequences is not empty, it is added to seq_list
         if sequences != "":
-            #O(1), it is appending an element
             seq_list.append(sequences)
         sequences = ""
 
@@ -65,7 +60,6 @@ for line in infile:
         sequences += line[:-1] 
 
 if sequences != "":
-    #O(1), it is appending an element
     seq_list.append(sequences)
 
 
@@ -74,14 +68,11 @@ seq = "".join(seq_list)
 
 
 #Check if sequence from infile is either a DNA or a protein sequence
-#O(o), o is the number of sequences (theoretically only 2)
 while pos < len(seq):
     
-    #O(p), p is the number of elements in amino_acid_checker list
     if seq[pos] in amino_acids_checker:
         is_protein = True
 
-    #O(q), q is the number of elements in amino_acids list
     elif seq[pos] not in amino_acids:
         print("The sequence found in the file", infile.name, "contained an impure sequence.")
         sys.exit(1)
@@ -160,11 +151,9 @@ elif is_protein == True:
     blosum_int = input_type_limiter("Specify the blosum matrix you want to use (introduce the number only): ", int)
     print("\n")
 
-    #O(s), s is the number of the elements in the blosum_files list
     if blosum_int in blosum_files:
         blosum = blosum_int 
 
-    #O(s), s is the number of the elements in the blosum_files list
     if blosum_int not in blosum_files:
         print("I don't have that file, I am using BLOSUM62 instead\n")
         blosum = "62"
