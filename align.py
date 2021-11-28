@@ -3,6 +3,48 @@ from functions_align import *
 import re
 import sys
 
+"""
+PSEUDOCODE
+    Initialize the variables.
+    Get the name of the file and check if its extension is allowed using a regular expression.
+    Open the file
+    Read the file and save the header lines and sequences in lists
+    Turn the sequences into a unique string
+
+    Check if the string contains nucleotides, amino acids or more characters.
+        If the string contain different characters, it is considered an impure sequence.
+        Program exists.
+
+    If the sequences contain only nucleotides:
+        Ask for the alignment until a valid answer is given.
+        Ask for the paramaters.
+        If mismatch, indel or opening are positive: 
+            it turns them into negative numbers.
+
+        If alignment is global:
+            It calculates the global alignment.
+            It prints the alignment
+
+        If alignment is local:
+            It calculates the local alignment.
+            It prints the alignment
+    
+    If the sequences contain only amino acids:
+        Ask for the alignment until a valid answer is given.
+        Ask for the paramaters.
+        If indel or opening are positive: 
+            It turns them into negative numbers.
+
+        If alignment is global:
+            It calculates the global alignment.
+            It prints the alignment
+
+        If alignment is local:
+            It calculates the local alignment.
+            It prints the alignment
+
+
+"""
 
 #Initialize the variables
 seq_list = []
@@ -102,10 +144,13 @@ if is_protein == False:
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
 
     if mismatch > 0:
+        print("Mismath was positive, I have changed to a negative number")
         mismatch = float("-" + str(mismatch))
     if opening > 0:
+        print("Opening penalty was positive, I have changed to a negative number")
         opening = float("-" + str(opening))
     if extension > 0:
+        print("Extension penalty was positive, I have changed to a negative number")
         extension = float("-" + str(extension))
     print()
 
@@ -152,9 +197,12 @@ elif is_protein == True:
     print("Please tell me which parameters you want to use\n")
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
+
     if opening > 0:
+        print("Opening penalty was positive, I have changed to a negative number")
         opening = float("-" + str(opening))
     if extension > 0:
+        print("Extension penalty was positive, I have changed to a negative number")
         extension = float("-" + str(extension))
     
     print()
@@ -162,6 +210,7 @@ elif is_protein == True:
     
     for i in range(len(blosum_files)):
         print("BLOSUM"+ str(blosum_files[i]), end = ", ")
+        
     blosum_int = input_type_limiter("Specify the blosum matrix you want to use (introduce the number only): ", int)
     print()
 
