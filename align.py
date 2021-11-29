@@ -61,6 +61,10 @@ is_protein = False
 pos = 0
 accepted_filetypes = ['.fsa', '.fasta', '.fna']
 alignment = ""
+matrix_choice = ""
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 #Read the file
@@ -109,6 +113,9 @@ if sequences != "":
 seq = "".join(seq_list)
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 #Check if sequence from infile is either a DNA or a protein sequence
 while pos < len(seq):
     
@@ -124,65 +131,90 @@ while pos < len(seq):
 
 #Once we know if it is DNA or protein, we can decide which alignment methods the program should use
 
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 # Sequences are DNA
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 if is_protein == False:
     
     dna_prot = "dna"
     #This variable is not used in DNA
     blosum = 0
 
-    print("The file provided contained DNA sequences.\n")
+    print("\nThe file provided contained DNA sequences.\n")
     
     while alignment not in ['GLOBAL', 'LOCAL']:
-        alignment = input("Do you want to perform a local or a global alignment?\n").upper()
+        alignment = input("-"*80 + "\nDo you want to perform a local or a global alignment?\n").upper()
     
-    print()
-    print("Please specify which parameters you want to use:\n")
+    print("-"*80 + "\n"*2 + "-"*80)
+    print("Please specify which parameters you want to use\n" + "-"*80 + "\n")
     match = input_type_limiter("Specify the match value (has to be a number): ", float)
     mismatch = input_type_limiter("Specify the mismatch penalty (has to be a number): ", float)
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
 
     if mismatch > 0:
-        print("Mismath was positive, I have changed to a negative number")
+        print("\nMismatch was positive, it was changed to a negative number\n")
         mismatch = float("-" + str(mismatch))
     if opening > 0:
-        print("Opening penalty was positive, I have changed to a negative number")
+        print("\nGap opening penalty was positive, it was changed to a negative number\n")
         opening = float("-" + str(opening))
     if extension > 0:
-        print("Extension penalty was positive, I have changed to a negative number")
+        print("\nGap extension penalty was positive, it was changed to a negative number\n")
         extension = float("-" + str(extension))
     print()
+    
+    while matrix_choice not in ['YES', 'NO']: 
+        matrix_choice = input_type_limiter("-"*80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
+    print("-"*80 +"\n"*3)
 
 
 
+    # Global alignment
     if alignment == "GLOBAL":
 
-        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n")
-        print("And the parameters are: match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
+        print("-"*80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n" + "-"*80)
+        print("And the parameters are: match: {}, mismatch: {}, opening score: {} and extension score: {}\n".format(match, mismatch, opening, extension))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print("\n")
+        print("\n"*2)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
+        if len(seq_list[0]) < 21 and len(seq_list[1]) < 21:
+            if matrix_choice == "YES":
+                print("\n The scoring matrix for your sequence:")
+                print_matrix(matrix)
+        else: 
+            print("Either of your sequences were longer than 20, so a matrix could not be printed.")
 
+
+
+    # Local alignment
     elif alignment == "LOCAL":
 
         print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guys by the way)\n")
-        print("And the parameters are: match:{}, mismatch:{}, opening score:{} and extension score:{}\n".format(match, mismatch, opening, extension))
+        print("And the parameters are: match: {}, mismatch: {}, opening score: {} and extension score: {}\n".format(match, mismatch, opening, extension))
 
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print()
+        print("\n"*2)
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
-        print("The score of the best alignment is", score)
+        print("The score of the best alignment is", score, "\n")
     
+        if len(seq_list[0]) < 21 and len(seq_list[1]) < 21:
+            if matrix_choice == "YES":
+                print("\n The scoring matrix for your sequence:")
+                print_matrix(matrix)
+        else: 
+            print("Either of your sequences were longer than 20, so a matrix could not be printed.")
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 # Sequences are protein
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 elif is_protein == True:
 
     dna_prot = "protein"
@@ -190,56 +222,72 @@ elif is_protein == True:
     match = 0 
     mismatch = 0
     
-    print("What you have given me is a protein sequence \n")
-    while alignment not in ['GLOBAL', 'LOCAL']:
-        alignment = input("Do you want to perform a local or a global alignment?\n").upper()
 
-    print("Please tell me which parameters you want to use\n")
+    print("\nWThe file provided contained amnino acid sequences\n")
+
+    while alignment not in ['GLOBAL', 'LOCAL']:
+        alignment = input("-"*80 + "\nDo you want to perform a local or a global alignment?\n").upper()
+    
+    print("-"*80 + "\n"*2 + "-"*80)
+    print("Please specify which parameters you want to use\n" + "-"*80 + "\n")
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
 
     if opening > 0:
-        print("Opening penalty was positive, I have changed to a negative number")
+        print("\n Gap opening penalty was positive, it was changed to a negative number\n")
         opening = float("-" + str(opening))
     if extension > 0:
-        print("Extension penalty was positive, I have changed to a negative number")
+        print("\nGap extension penalty was positive, it was changed to a negative number\n")
         extension = float("-" + str(extension))
     
-    print()
-    print("The BLOSUM matrix options are: ")
+    
+    print("\n" + "-"*80 + "\nThe BLOSUM matrix options are: ")
     
     for i in range(len(blosum_files)):
-        print("BLOSUM"+ str(blosum_files[i]), end = ", ")
-        
+        print("BLOSUM"+ str(blosum_files[i]), end = "\t")
+    print("-"*80)
     blosum_int = input_type_limiter("Specify the blosum matrix you want to use (introduce the number only): ", int)
     print()
 
-    if blosum_int in blosum_files:
-        blosum = blosum_int 
+    if str(blosum_int) in blosum_files:
+        blosum = str(blosum_int )
 
-    if blosum_int not in blosum_files:
+    if str(blosum_int) not in blosum_files:
         print("I don't have that file, I am using BLOSUM62 instead\n")
         blosum = "62"
 
+    while matrix_choice not in ['YES', 'NO']: 
+        matrix_choice = input_type_limiter("-"*80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
+    print("-"*80 +"\n"*3)
 
-
+    # Global alignment
     if alignment == "GLOBAL" :
-
-        print("Perfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guy by the way)\n")
-        print("And the parameters are: opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
+        print("-"*80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guys by the way)\n" + "-"*80)
+        print("The parameters specified were: opening score: {}, extension score: {} and BLOSUM{}\n".format(opening, extension, blosum))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
+        print("\n"*2)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
-        print("\n")
         
+        
+
         print(alignment)
         
+        if len(seq_list[0]) < 21 and len(seq_list[1]) < 21:
+            if matrix_choice == "YES":
+                print("\n The scoring matrix for your sequence:")
+                print_matrix(matrix)
+        else: 
+            print("Either of your sequences were longer than 20, so a matrix could not be printed.")
 
+
+
+    # Local alignment
     elif alignment == "LOCAL":
 
-        print("Perfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n")
-        print("And the parameters are: opening score:{}, extension score:{} and blosum_matrix\n".format(opening, extension, blosum))
+        print("-"*80 + "\nPerfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n" + "-"*80)
+        print("The parameters specified were: opening score: {}, extension score: {} and BLOSUM{}\n".format(opening, extension, blosum))
         
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
@@ -248,3 +296,10 @@ elif is_protein == True:
         
         print(alignment)
         print("The score of the best alignment is", score)
+
+        if len(seq_list[0]) < 21 and len(seq_list[1]) < 21:
+            if matrix_choice == "YES":
+                print("\nThe scoring matrix for your sequence:")
+                print_matrix(matrix)
+        else: 
+            print("Either of your sequences were longer than 20, so a matrix could not be printed.")
