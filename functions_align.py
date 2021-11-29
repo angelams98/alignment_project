@@ -4,6 +4,8 @@
 import re
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 def input_type_limiter(string, input_type):
     """
@@ -30,6 +32,9 @@ def input_type_limiter(string, input_type):
         except:
             print("The given input could not be returned as a", type_dict[input_type] + ".", " Please try again.")
             pass
+
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 def make_matrix(string1, string2, filler):
@@ -67,8 +72,9 @@ def make_matrix(string1, string2, filler):
     return matrix
 
 
-
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
  
+
 def blosum_matrix(blosum_file):
     """
         Creates a BLOSUM matrix as a dictionary of dictionaries with values for amino acid substitutions
@@ -133,6 +139,9 @@ def blosum_matrix(blosum_file):
     return blosum_dict
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 def print_matrix(matrix):
     """
         Prints a list of lists matrix on screen in a formatted way
@@ -148,15 +157,24 @@ def print_matrix(matrix):
         :matrix: A list of lists matrix     
     """
 
+
     for row in range(len(matrix)):
-        printlist = []
-
+        print_list = []
+    
         for column in range(len(matrix[row])):
-            printlist.append(str(matrix[row][column]))
-
-        print("\t".join(printlist))
+            print_list.append(str(matrix[row][column]))
+        
+    
+        format_list = ['{:>8}' for item in print_list]
+        format_string = " ".join(format_list)
+        
+        
+        print(format_string.format(*print_list))
+    
     print("\n")  
 
+
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
@@ -414,6 +432,9 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     return matrix, final_alignment, max(total_alignment_scores)
 
 
+# --------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, match, mismatch):
     """
     Calculates a scoring matrix for two DNA/protein sequences using the Needleman-Wunsch algorithm,
@@ -461,8 +482,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     #Initialize variables 
     ncol = len(string1)
     nrow = len(string2)
-    string1 = "*" + string1
-    string2 = "*" + string2
+
     align1 = ""
     align2 = ""
     middle_space = ""
@@ -554,10 +574,10 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
 
     # If we reach last position from the end for each string (first position contains "*"), program stops
     while nrow > 1 or ncol > 1:
-        
+
         # Match between sequences
         #nrow and ncol are the length of the strings and matrix is bigger
-        if moves_matrix[nrow + 1][ncol + 1] == "diag":
+        if moves_matrix[nrow][ncol] == "diag":
             nrow -= 1
             ncol -= 1
         
@@ -590,7 +610,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                     middle_space = " " + middle_space
                     
         # Gap in sequence
-        if moves_matrix[nrow + 1][ncol + 1] == "top":
+        if moves_matrix[nrow][ncol] == "top":
             nrow -= 1
             
             align1 = "-" + align1
@@ -598,7 +618,7 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
             middle_space = " " + middle_space
 
         # Gap in sequence
-        if moves_matrix[nrow + 1][ncol + 1] == "left":
+        if moves_matrix[nrow][ncol] == "left":
             ncol -= 1
 
             align1 = string1[ncol + 1] + align1
