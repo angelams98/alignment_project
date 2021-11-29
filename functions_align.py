@@ -63,10 +63,10 @@ def make_matrix(string1, string2, filler):
     matrix = []
 
     #Create an empty matrix
-    for row in range(len(string2)+1):
+    for row in range(len(string2) + 1):
         matrix.append([])
     
-        for col in range(len(string1)+1):
+        for col in range(len(string1) + 1):
             matrix[row].append(filler)
 
     return matrix
@@ -130,9 +130,11 @@ def blosum_matrix(blosum_file):
     # Create a dictionary of dictionaries
     for row in range(len(blosum_list)):
         blosum_dict[blosum_list[row][0]] = {}
+
         for col in range(len(blosum_list[0])) :
             if row == 0 or col == 0:
                 pass
+
             else:
                 blosum_dict[blosum_list[row][0]][blosum_list[0][col]] = int(blosum_list[row][col])
 
@@ -244,13 +246,16 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     #Initialize the variables 
     matrix = make_matrix(string1, string2, 0)
     matrix_moves = make_matrix(string1, string2, "zero")
+
     ncol = len(string1)
     nrow = len(string2)
+
     value_left_list = []
     value_top_list = []
 
     string1 = "*" + string1
     string2 = "*" + string2
+
 
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":
@@ -273,14 +278,14 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 value_diag  = matrix[row - 1][col - 1] + int(blosum[string1[col]][string2[row]])
 
             for i in range(col, 0, -1):
-                value_left = matrix[row][col - i] + opening + exten*i
+                value_left = matrix[row][col - i] + opening + exten * i
                 value_left_list.append(value_left)
             
             value_left = max(value_left_list)
             value_left_list = []
 
             for j in range(row, 0, -1):
-                value_top = matrix[row - j][col] + opening + exten*j
+                value_top = matrix[row - j][col] + opening + exten * j
                 value_top_list.append(value_top)
             
             value_top = max(value_top_list)
@@ -415,17 +420,20 @@ def alignment_sw(string1, string2, blosum_number, dna_prot, opening, exten, matc
                 middle_space = " " + middle_space
 
 
+        #It saves all the possible alignments and scores in lists
         total_align1.append(align1)
         total_align2.append(align2)
         total_align_middle.append(middle_space)
         total_alignment_scores.append(score)
 
 
+    #It takes the best alignment using the position where the maximum score is
     final_align1 = total_align1[total_alignment_scores.index(max(total_alignment_scores))]
     final_align2 = total_align2[total_alignment_scores.index(max(total_alignment_scores))]
     final_align_middle = total_align_middle[total_alignment_scores.index(max(total_alignment_scores))]
 
     
+    #Saves the final alignment in a fasta format, 60 characters per line
     for i in range(0, len(final_align1), 60):
         final_alignment += final_align1[i:i+60] + "\n" + final_align_middle[i:i+60] + "\n" + final_align2[i:i+60] + "\n"  + "\n"
 
@@ -486,9 +494,12 @@ def alignment_nw(string1, string2, blosum_number, dna_prot, opening, exten, matc
     align1 = ""
     align2 = ""
     middle_space = ""
+
     global_alignment = ""
+
     value_left_list = []
     value_top_list = []
+    
     
     # Call blosum_matrix function to create the user-requested BLOSUM substitution matrix
     if dna_prot == "protein":

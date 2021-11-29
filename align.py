@@ -144,10 +144,10 @@ if is_protein == False:
     print("\nThe file provided contained DNA sequences.\n")
     
     while alignment not in ['GLOBAL', 'LOCAL']:
-        alignment = input("-"*80 + "\nDo you want to perform a local or a global alignment?\n").upper()
+        alignment = input("-" * 80 + "\nDo you want to perform a local or a global alignment?\n").upper()
     
-    print("-"*80 + "\n"*2 + "-"*80)
-    print("Please specify which parameters you want to use\n" + "-"*80 + "\n")
+    print("-" * 80 + "\n" * 2 + "-" * 80)
+    print("Please specify which parameters you want to use\n" + "-" * 80 + "\n")
     match = input_type_limiter("Specify the match value (has to be a number): ", float)
     mismatch = input_type_limiter("Specify the mismatch penalty (has to be a number): ", float)
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
@@ -165,20 +165,20 @@ if is_protein == False:
     print()
     
     while matrix_choice not in ['YES', 'NO']: 
-        matrix_choice = input_type_limiter("-"*80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
-    print("-"*80 +"\n"*3)
+        matrix_choice = input_type_limiter("-" * 80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
+    print("-" * 80 +"\n" * 3)
 
 
 
     # Global alignment
     if alignment == "GLOBAL":
 
-        print("-"*80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n" + "-"*80)
+        print("-" * 80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunsch method (nice guys by the way)\n" + "-"*80)
         print("And the parameters are: match: {}, mismatch: {}, opening score: {} and extension score: {}\n".format(match, mismatch, opening, extension))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print("\n"*2)
+        print("\n" * 2)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
 
@@ -199,7 +199,7 @@ if is_protein == False:
 
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print("\n"*2)
+        print("\n" * 2)
         print("Smith-Waterman alignment for:\n{}\n{}\n".format(title[0], title[1]))
         print(alignment)
         print("The score of the best alignment is", score, "\n")
@@ -226,10 +226,10 @@ elif is_protein == True:
     print("\nWThe file provided contained amnino acid sequences\n")
 
     while alignment not in ['GLOBAL', 'LOCAL']:
-        alignment = input("-"*80 + "\nDo you want to perform a local or a global alignment?\n").upper()
+        alignment = input("-" * 80 + "\nDo you want to perform a local or a global alignment?\n").upper()
     
-    print("-"*80 + "\n"*2 + "-"*80)
-    print("Please specify which parameters you want to use\n" + "-"*80 + "\n")
+    print("-" * 80 + "\n" * 2 + "-" * 80)
+    print("Please specify which parameters you want to use\n" + "-" * 80 + "\n")
     opening = input_type_limiter("Specify the indel penalty (has to be a number): ", float)
     extension = input_type_limiter("Specify the extension penalty (has to be a number): ", float)
 
@@ -241,11 +241,11 @@ elif is_protein == True:
         extension = float("-" + str(extension))
     
     
-    print("\n" + "-"*80 + "\nThe BLOSUM matrix options are: ")
+    print("\n" + "-" * 80 + "\nThe BLOSUM matrix options are: ")
     
     for i in range(len(blosum_files)):
         print("BLOSUM"+ str(blosum_files[i]), end = "\t")
-    print("-"*80)
+    print("-" * 80)
     blosum_int = input_type_limiter("Specify the blosum matrix you want to use (introduce the number only): ", int)
     print()
 
@@ -257,17 +257,17 @@ elif is_protein == True:
         blosum = "62"
 
     while matrix_choice not in ['YES', 'NO']: 
-        matrix_choice = input_type_limiter("-"*80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
-    print("-"*80 +"\n"*3)
+        matrix_choice = input_type_limiter("-" * 80 + "\nDo you also want to see the scoring matrix? It can only be shown for sequences shorter than 20. \n(yes/no): ", str).upper()
+    print("-" * 80 +"\n" * 3)
 
     # Global alignment
     if alignment == "GLOBAL" :
-        print("-"*80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guys by the way)\n" + "-"*80)
+        print("-" * 80 + "\nPerfect, we are going to do a global alignment of your sequence, we will be applying \nNeedleman-Wunshman method (nice guys by the way)\n" + "-"*80)
         print("The parameters specified were: opening score: {}, extension score: {} and BLOSUM{}\n".format(opening, extension, blosum))
         
         (matrix, alignment) = alignment_nw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
         
-        print("\n"*2)
+        print("\n" * 2)
         print("Needleman-Wunsch alignment for:\n{}\n{}\n".format(title[0], title[1]))
         
         
@@ -286,7 +286,7 @@ elif is_protein == True:
     # Local alignment
     elif alignment == "LOCAL":
 
-        print("-"*80 + "\nPerfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n" + "-"*80)
+        print("-" * 80 + "\nPerfect, we are going to do a local alignment of your sequence, we will be applying \nSmith-Waterman method (nice guy by the way)\n" + "-"*80)
         print("The parameters specified were: opening score: {}, extension score: {} and BLOSUM{}\n".format(opening, extension, blosum))
         
         (matrix, alignment, score) = alignment_sw(seq_list[0], seq_list[1], blosum, dna_prot, opening, extension, match, mismatch)
